@@ -14,8 +14,8 @@ namespace PStarSaveEditor
         private string levelLoc;
         private string currentHPLoc;
         private string maxHPLoc;
-        private string currentTPLoc;
-        private string maxTPLoc;
+        private string currentMPLoc;
+        private string maxMPLoc;
         private string attackLoc;
         private string defenseLoc;
         private string equippedWeaponLoc;
@@ -49,15 +49,15 @@ namespace PStarSaveEditor
             get { return maxHPLoc; }
             set { maxHPLoc = value; }
         }
-        public string CurrentTPLoc
+        public string CurrentMPLoc
         {
-            get { return currentTPLoc; }
-            set { currentTPLoc = value; }
+            get { return currentMPLoc; }
+            set { currentMPLoc = value; }
         }
-        public string MaxTPLoc
+        public string MaxMPLoc
         {
-            get { return maxTPLoc; }
-            set { maxTPLoc = value; }
+            get { return maxMPLoc; }
+            set { maxMPLoc = value; }
         }
         public string AttackLoc
         {
@@ -92,8 +92,8 @@ namespace PStarSaveEditor
             string levelLoc, 
             string currentHPLoc, 
             string maxHPLoc,
-            string currentTPLoc,
-            string maxTPLoc,
+            string currentMPLoc,
+            string maxMPLoc,
             string attackLoc, 
             string defenseLoc, 
             string equippedWeaponLoc, 
@@ -105,8 +105,8 @@ namespace PStarSaveEditor
             LevelLoc = levelLoc;
             CurrentHPLoc = currentHPLoc;
             MaxHPLoc = maxHPLoc;
-            CurrentTPLoc = currentTPLoc;
-            MaxTPLoc = maxTPLoc;
+            CurrentMPLoc = currentMPLoc;
+            MaxMPLoc = maxMPLoc;
             AttackLoc = attackLoc;
             DefenseLoc = defenseLoc;
             EquippedWeaponLoc = equippedWeaponLoc;
@@ -128,8 +128,8 @@ namespace PStarSaveEditor
             LevelLoc = characterItem.LevelLoc;
             CurrentHPLoc = characterItem.CurrentHPLoc;
             MaxHPLoc = characterItem.MaxHPLoc;
-            CurrentHPLoc = characterItem.CurrentTPLoc;
-            MaxTPLoc = characterItem.MaxTPLoc;
+            CurrentMPLoc = characterItem.CurrentMPLoc;
+            MaxMPLoc = characterItem.MaxMPLoc;
             AttackLoc = characterItem.AttackLoc;
             DefenseLoc = characterItem.DefenseLoc;
             EquippedWeaponLoc = characterItem.equippedWeaponLoc;

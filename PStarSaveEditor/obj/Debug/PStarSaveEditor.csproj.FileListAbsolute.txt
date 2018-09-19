@@ -1,9 +1,10 @@
-C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\bin\Debug\PStar3SaveEditor.exe.config
-C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\bin\Debug\PStar3SaveEditor.exe
-C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\bin\Debug\PStar3SaveEditor.pdb
 C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.ErrorLogView.resources
 C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.MainForm.resources
-C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStar3SaveEditor.Properties.Resources.resources
 C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.csproj.GenerateResource.Cache
-C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStar3SaveEditor.exe
-C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStar3SaveEditor.pdb
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\bin\Debug\PStarSaveEditor.exe.config
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\bin\Debug\PStarSaveEditor.exe
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\bin\Debug\PStarSaveEditor.pdb
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.Properties.Resources.resources
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.csproj.CoreCompileInputs.cache
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.exe
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Debug\PStarSaveEditor.pdb

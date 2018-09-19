@@ -17,3 +17,4 @@ C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEd
 C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Release\PStarSaveEditor.Properties.Resources.resources
 C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Release\PStarSaveEditor.exe
 C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Release\PStarSaveEditor.pdb
+C:\Users\lamin\Documents\Visual Studio 2012\Projects\PStarSaveEditor\PStarSaveEditor\obj\Release\PStarSaveEditor.csproj.CoreCompileInputs.cache

@@ -17,6 +17,7 @@ namespace PStarSaveEditor
         public enum AppPanel
         {
             All,
+            PStar1,
             PStar2,
             PStar3,
             PStar4,
@@ -27,6 +28,9 @@ namespace PStarSaveEditor
         #region - Class Fields -
         private bool fileLoaded;
         private const int PS3_TOTAL_UPDATE_FIELDS = 12;
+        private const ushort PS1_SHORT_MAX = 65535;
+        private const short PS1_BYTE_MAX = 255;
+        private const string PS1_MESETA_LOC = "459C";
         private const string PS2_MESETA_LOC = "EA98";
         private const string PS3_MESETA_LOC = "E4B8";
         private const string PS4_MESETA_LOC = "118B0";
@@ -69,7 +73,7 @@ namespace PStarSaveEditor
             {
                 // Set the open file dialog properties
                 openFD.Title = "Select a " + game + " save state file";
-                openFD.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                openFD.InitialDirectory = string.Empty;
                 openFD.FileName = "";
 
                 // Show the open file dialog and capture the selected file
@@ -79,6 +83,10 @@ namespace PStarSaveEditor
                     FileLoaded = true;
                     switch (ActivePanel)
                     {
+                        case AppPanel.PStar1:
+                            PopulatePS1CurrentMeseta();
+                            break;
+
                         case AppPanel.PStar2:
                             PopulatePS2CurrentMeseta();
                             break;
@@ -93,10 +101,14 @@ namespace PStarSaveEditor
                     }
                 }
                 else
+                {
                     saveStateFileTb.Text = "";
+                }
             }
             else
-                MessageBox.Show("You must first select a Phantasy Star game from the menu so the correct game data is loaded.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            {
+                MessageBox.Show("You must first select a Phantasy Star game from the menu to ensure the correct game data is loaded.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void clearErrorLogToolStripMenuItem_Click(object sender, EventArgs e)
@@ -107,6 +119,16 @@ namespace PStarSaveEditor
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void phantasyStarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ActivePanel = AppPanel.PStar1;
+            saveStateFileTb.Text = string.Empty;
+            ps1CharacterCmb.SelectedIndex = -1;
+            ResetPS1Controls();
+            PopulatePS1CharacterList();
+            ShowPanel(AppPanel.PStar1, true);
         }
 
         private void phantasyStar2ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -145,13 +167,13 @@ namespace PStarSaveEditor
             errLogView.ShowDialog();
         }
 
-        private void ps3CharacterCmb_SelectedIndexChanged(object sender, EventArgs e)
+        private void ps1CharacterCmb_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ps3CharacterCmb.SelectedIndex >= 0)
+            if (ps1CharacterCmb.SelectedIndex >= 0)
             {
                 if (FileLoaded)
                 {
-                    PopulatePS3CharacterDetails(ps3CharacterCmb.SelectedItem as PS3CharacterItem);
+                    PopulatePS1CharacterDetails(ps1CharacterCmb.SelectedItem as PS1CharacterItem);
                 }
                 else
                 {
@@ -186,6 +208,21 @@ namespace PStarSaveEditor
             }
         }
 
+        private void ps3CharacterCmb_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ps3CharacterCmb.SelectedIndex >= 0)
+            {
+                if (FileLoaded)
+                {
+                    PopulatePS3CharacterDetails(ps3CharacterCmb.SelectedItem as PS3CharacterItem);
+                }
+                else
+                {
+                    MessageBox.Show("You must load a save state file before you can view a character from it.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
         private void ps4CharacterCmb_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (ps4CharacterCmb.SelectedIndex >= 0)
@@ -201,14 +238,19 @@ namespace PStarSaveEditor
             }
         }
 
-        private void ps3UpdSavStateBtn_Click(object sender, EventArgs e)
+        private void upsPS1SaveStateBtn_Click(object sender, EventArgs e)
         {
-            UpdatePS3SaveState();
-        }
+            UpdatePS1SaveState();
+        }        
 
         private void ps2UpdSavStateBtn_Click(object sender, EventArgs e)
         {
             UpdatePS2SaveState();
+        }
+
+        private void ps3UpdSavStateBtn_Click(object sender, EventArgs e)
+        {
+            UpdatePS3SaveState();
         }
 
         private void ps4UpdSavStateBtn_Click(object sender, EventArgs e)
@@ -268,6 +310,10 @@ namespace PStarSaveEditor
             string game = string.Empty;
             switch (ActivePanel)
             {
+                case AppPanel.PStar1:
+                    game = "Phantasy Star";
+                    break;
+
                 case AppPanel.PStar2:
                     game = "Phantasy Star 2";
                     break;
@@ -289,15 +335,27 @@ namespace PStarSaveEditor
             switch (panel)
             {
                 case AppPanel.All:
+                    pstar1Panel.Visible = show;
                     pstar2Panel.Visible = show;
                     pstar3Panel.Visible = show;
                     pstar4Panel.Visible = show;
+                    break;
+
+                case AppPanel.PStar1:
+                    pstar1Panel.Visible = show;
+                    if (show)
+                    {
+                        pstar2Panel.Visible = !show;
+                        pstar3Panel.Visible = !show;
+                        pstar4Panel.Visible = !show;
+                    }
                     break;
 
                 case AppPanel.PStar2:
                     pstar2Panel.Visible = show;
                     if (show)
                     {
+                        pstar1Panel.Visible = !show;
                         pstar3Panel.Visible = !show;
                         pstar4Panel.Visible = !show;
                     }
@@ -307,6 +365,7 @@ namespace PStarSaveEditor
                     pstar3Panel.Visible = show;
                     if (show)
                     {
+                        pstar1Panel.Visible = !show;
                         pstar2Panel.Visible = !show;
                         pstar4Panel.Visible = !show;
                     }
@@ -316,6 +375,7 @@ namespace PStarSaveEditor
                     pstar4Panel.Visible = show;
                     if (show)
                     {
+                        pstar1Panel.Visible = !show;
                         pstar2Panel.Visible = !show;
                         pstar3Panel.Visible = !show;
                     }
@@ -501,9 +561,13 @@ namespace PStarSaveEditor
             ps3CurSkillTb.Text = val.ToString();
             value = GetValueByOffset(charItem.PoisonLoc, 1);
             if (value == "40")
+            {
                 ps3CurPoisonChk.Checked = true;
+            }
             else
+            {
                 ps3CurPoisonChk.Checked = false;
+            }
             //value = GetValueByOffset(charItem.ItemCntLoc, 2);
             //val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
             //curItemCountTb.Text = val.ToString();
@@ -541,6 +605,23 @@ namespace PStarSaveEditor
             }
 
             return value;
+        }
+
+        private string ReverseHexPairs(string hexString)
+        {
+            string newHex = string.Empty;
+
+            if (hexString.Length % 2 != 0)
+            {
+                newHex = hexString;
+            }
+            else
+            {
+                newHex = hexString.Substring(2, 2);
+                newHex += hexString.Substring(0, 2);
+            }            
+
+            return newHex;
         }
 
         private bool SetValueByOffset(string value, string offset)
@@ -667,6 +748,52 @@ namespace PStarSaveEditor
                 writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
                 writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
                 byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                writer.Write(bytes);
+
+                success = true;
+            }
+            catch (IOException ioe)
+            {
+                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
+                success = false;
+            }
+            catch (ArgumentException aue)
+            {
+                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
+                success = false;
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
+                success = false;
+            }
+            finally
+            {
+                writer.Close();
+                writer.Dispose();
+            }
+
+            return success;
+        }
+
+        private bool SetValueByOffset(ushort value, string offset, bool reverse)
+        {
+            bool success = false;
+            BinaryWriter writer = null;
+
+            try
+            {
+                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
+                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                byte[] bytes = new byte[]{ };
+                if (reverse)
+                {
+                    bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                }
+                else
+                {
+                    bytes = BitConverter.GetBytes(value).ToArray();
+                }
                 writer.Write(bytes);
 
                 success = true;
@@ -1209,9 +1336,152 @@ namespace PStarSaveEditor
             PSItem item = ps4ItemsList.FirstOrDefault(i => i.ItemID == id);
             string name = string.Empty;
             if (item != null)
+            {
                 name = item.ItemName;
+            }
 
             return name;
+        }
+
+        private void ResetPS1Controls()
+        {
+            ps1CurrentMesetaTb.Text = string.Empty;
+            ps1NewMesetaTb.Text = string.Empty;
+            ps1LevelTb.Text = string.Empty;
+            ps1ExpTb.Text = string.Empty;
+            ps1NewExpTb.Text = string.Empty;
+            ps1CurrentHPTb.Text = string.Empty;
+            ps1NewCurrentHPTb.Text = string.Empty;
+            ps1MaxHPTb.Text = string.Empty;
+            ps1NewMaxHPTb.Text = string.Empty;
+            ps1CurrentMPTb.Text = string.Empty;
+            ps1NewCurrentMPTb.Text = string.Empty;
+            ps1MaxMPTb.Text = string.Empty;
+            ps1NewMaxMPTb.Text = string.Empty;
+            ps1AttackTb.Text = string.Empty;
+            ps1NewAttackTb.Text = string.Empty;
+            ps1DefenseTb.Text = string.Empty;
+            ps1NewDefenseTb.Text = string.Empty;
+        }
+
+        private void PopulatePS1CharacterList()
+        {
+            ps1CharacterCmb.Items.Clear();
+
+            PS1CharacterItem alisItem = new PS1CharacterItem("Alis Landale",
+                "44BF",
+                "44C1",
+                "44BD",
+                "44C2",
+                "44BE",
+                "44C3",
+                "44C4",
+                "44C5",
+                string.Empty,
+                string.Empty,
+                string.Empty);
+            ps1CharacterCmb.Items.Add(alisItem);
+
+            PS1CharacterItem myauItem = new PS1CharacterItem("Myau",
+                "44CF",
+                "44D1",
+                "44CD",
+                "44D2",
+                "44CE",
+                "44D3",
+                "44D4",
+                "44D5",
+                string.Empty,
+                string.Empty,
+                string.Empty);
+            ps1CharacterCmb.Items.Add(myauItem);
+
+            PS1CharacterItem odinItem = new PS1CharacterItem("Odin",
+                "44DF",
+                "44E1",
+                "44DD",
+                "44E2",
+                "44DE",
+                "44E3",
+                "44E4",
+                "44E5",
+                string.Empty,
+                string.Empty,
+                string.Empty);
+            ps1CharacterCmb.Items.Add(odinItem);
+
+            PS1CharacterItem noahItem = new PS1CharacterItem("Noah",
+                "44EF",
+                "44F1",
+                "44ED",
+                "44F2",
+                "44EE",
+                "44F3",
+                "44F4",
+                "44F5",
+                string.Empty,
+                string.Empty,
+                string.Empty);
+            ps1CharacterCmb.Items.Add(noahItem);
+
+            ps1CharacterCmb.DisplayMember = "Name";
+        }
+
+        private string GetPS1CurrentMeseta()
+        {
+            string hexVal = GetValueByOffset(PS1_MESETA_LOC, 2);
+            hexVal = ReverseHexPairs(hexVal);
+            long meseta = long.Parse(hexVal, System.Globalization.NumberStyles.HexNumber);
+            return meseta.ToString();
+        }
+
+        private void PopulatePS1CurrentMeseta()
+        {
+            ps1CurrentMesetaTb.Text = GetPS1CurrentMeseta();
+        }
+
+        private void PopulatePS1CharacterDetails(PS1CharacterItem charItem)
+        {
+            string value = GetValueByOffset(charItem.LevelLoc, 1);
+            long val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1LevelTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.ExperienceLoc, 2);
+            value = ReverseHexPairs(value);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1ExpTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.CurrentHPLoc, 1);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1CurrentHPTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.MaxHPLoc, 1);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1MaxHPTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.CurrentMPLoc, 1);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1CurrentMPTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.MaxMPLoc, 1);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1MaxMPTb.Text = val.ToString();
+            if (charItem.Name == "Odin")
+            {
+                ps1NewMaxMPTb.Enabled = false;
+            }
+            else
+            {
+                ps1NewMaxMPTb.Enabled = true;
+            }
+
+            value = GetValueByOffset(charItem.AttackLoc, 1);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1AttackTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.DefenseLoc, 1);
+            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            ps1DefenseTb.Text = val.ToString();
         }
 
         private void ResetPS2Controls()
@@ -1448,9 +1718,15 @@ namespace PStarSaveEditor
         private byte[] HexStringToBytes(string hexString)
         {
             if (hexString == null)
+            {
                 throw new ArgumentNullException("hexString");
+            }
+
             if (hexString.Length % 2 != 0)
+            {
                 throw new ArgumentException("hexString must have an even length", "hexString");
+            }
+
             var bytes = new byte[hexString.Length / 2];
             for (int i = 0; i < bytes.Length; i++)
             {
@@ -1475,6 +1751,413 @@ namespace PStarSaveEditor
             ps3NewSkillTb.Text = string.Empty;
         }
 
+        private void UpdatePS1SaveState()
+        {
+            int errorCount = 0;
+            PS1CharacterItem charItem = null;
+
+            if (ps1NewMesetaTb.Text != string.Empty)
+            {
+                ushort meseta = 0;
+                if (ushort.TryParse(ps1NewMesetaTb.Text, out meseta))
+                {
+                    if (meseta <= PS1_SHORT_MAX)
+                    {
+                        if (!SetValueByOffset(meseta, PS1_MESETA_LOC, false))
+                        {
+                            errorCount++;
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a value less than or equal to " + PS1_SHORT_MAX.ToString() + " for the new meseta value.");
+                    }
+                }
+                else
+                {
+                    errorCount++;
+                    LogError("You must enter a numeric value for the new mesta value.");
+                }
+            }
+
+            if (ps1CharacterCmb.SelectedIndex >= 0)
+            {
+                charItem = ps1CharacterCmb.SelectedItem as PS1CharacterItem;
+                if (ps1NewExpTb.Text != string.Empty)
+                {
+                    ushort exp = 0;
+                    if (ushort.TryParse(ps1NewExpTb.Text, out exp))
+                    {
+                        if (exp <= PS1_SHORT_MAX)
+                        {
+                            if (!SetValueByOffset(exp, charItem.ExperienceLoc, false))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_SHORT_MAX.ToString() + " for the new experience points value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new experience points value.");
+                    }
+                }
+
+                if (ps1NewCurrentHPTb.Text != string.Empty)
+                {
+                    short curHP = 0;
+                    if (short.TryParse(ps1NewCurrentHPTb.Text, out curHP))
+                    {
+                        if (curHP <= PS1_BYTE_MAX)
+                        {
+                            if (!SetValueByOffset(Convert.ToByte(curHP), charItem.CurrentHPLoc))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_BYTE_MAX.ToString() + " for the new current HP value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new current HP value.");
+                    }
+                }
+
+                if (ps1NewMaxHPTb.Text != string.Empty)
+                {
+                    short maxHP = 0;
+                    if (short.TryParse(ps1NewMaxHPTb.Text, out maxHP))
+                    {
+                        if (maxHP <= PS1_BYTE_MAX)
+                        {
+                            if (!SetValueByOffset(Convert.ToByte(maxHP), charItem.MaxHPLoc))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_BYTE_MAX.ToString() + " for the new max HP value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new max HP value.");
+                    }
+                }
+
+                if (ps1NewCurrentMPTb.Text != string.Empty)
+                {
+                    short curMP = 0;
+                    if (short.TryParse(ps1NewCurrentMPTb.Text, out curMP))
+                    {
+                        if (curMP <= PS1_BYTE_MAX)
+                        {
+                            if (!SetValueByOffset(Convert.ToByte(curMP), charItem.CurrentMPLoc))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_BYTE_MAX.ToString() + " for the new current MP value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new current MP value.");
+                    }
+                }
+
+                if (ps1NewMaxMPTb.Text != string.Empty)
+                {
+                    short maxMP = 0;
+                    if (short.TryParse(ps1NewMaxMPTb.Text, out maxMP))
+                    {
+                        if (maxMP <= PS1_BYTE_MAX)
+                        {
+                            if (!SetValueByOffset(Convert.ToByte(maxMP), charItem.MaxMPLoc))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_BYTE_MAX.ToString() + " for the new max MP value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new max MP value.");
+                    }
+                }
+
+                if (ps1NewAttackTb.Text != string.Empty)
+                {
+                    short attack = 0;
+                    if (short.TryParse(ps1NewAttackTb.Text, out attack))
+                    {
+                        if (attack <= PS1_BYTE_MAX)
+                        {
+                            if (!SetValueByOffset(Convert.ToByte(attack), charItem.AttackLoc))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_BYTE_MAX.ToString() + " for the new attack value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new attack value.");
+                    }
+                }
+
+                if (ps1NewDefenseTb.Text != string.Empty)
+                {
+                    short defense = 0;
+                    if (short.TryParse(ps1NewDefenseTb.Text, out defense))
+                    {
+                        if (defense <= PS1_BYTE_MAX)
+                        {
+                            if (!SetValueByOffset(Convert.ToByte(defense), charItem.DefenseLoc))
+                            {
+                                errorCount++;
+                            }
+                        }
+                        else
+                        {
+                            errorCount++;
+                            LogError("You must enter a value less than or equal to " + PS1_BYTE_MAX.ToString() + " for the new defense value.");
+                        }
+                    }
+                    else
+                    {
+                        errorCount++;
+                        LogError("You must enter a numeric value for the new defense value.");
+                    }
+                }
+            }
+
+            string completionMessage = string.Empty;
+            if (errorCount > 0)
+            {
+                completionMessage = "The save state update process has completed with errors.";
+            }
+            else
+            {
+                completionMessage = "The save state update process has completed.";
+            }
+            MessageBox.Show(completionMessage, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            ResetPS1Controls();
+            PopulatePS1CurrentMeseta();
+            if (charItem != null)
+            {
+                PopulatePS1CharacterDetails(charItem);
+            }
+        }
+
+        private void UpdatePS2SaveState()
+        {
+            PS2CharacterItem charItem = ps2CharacterCmb.SelectedItem as PS2CharacterItem;
+
+            if (ps2NewMesetaTb.Text != string.Empty)
+            {
+                int meseta = 0;
+                if (int.TryParse(ps2NewMesetaTb.Text, out meseta))
+                {
+                    SetValueByOffset(meseta, PS2_MESETA_LOC);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewCurHPTb.Text != string.Empty)
+            {
+                short hp = 0;
+                if (short.TryParse(ps2NewCurHPTb.Text, out hp))
+                {
+                    SetValueByOffset(hp, charItem.CurrentHPLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the current HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewMaxHPTb.Text != string.Empty)
+            {
+                short hp = 0;
+                if (short.TryParse(ps2NewMaxHPTb.Text, out hp))
+                {
+                    SetValueByOffset(hp, charItem.MaxHPLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the max HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewCurTPTb.Text != string.Empty)
+            {
+                short tp = 0;
+                if (short.TryParse(ps2NewCurTPTb.Text, out tp))
+                {
+                    SetValueByOffset(tp, charItem.CurrentTPLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the current TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewMaxTPTb.Text != string.Empty)
+            {
+                short tp = 0;
+                if (short.TryParse(ps2NewMaxTPTb.Text, out tp))
+                {
+                    SetValueByOffset(tp, charItem.MaxTPLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the max TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewExpTb.Text != string.Empty)
+            {
+                int exp = 0;
+                if (int.TryParse(ps2NewExpTb.Text, out exp))
+                {
+                    SetValueByOffset(exp, charItem.ExperienceLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the experience value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewStrTb.Text != string.Empty)
+            {
+                short str = 0;
+                if (short.TryParse(ps2NewStrTb.Text, out str))
+                {
+                    SetValueByOffset(str, charItem.StrengthLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the strength value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewMentalTb.Text != string.Empty)
+            {
+                short mental = 0;
+                if (short.TryParse(ps2NewMentalTb.Text, out mental))
+                {
+                    SetValueByOffset(mental, charItem.MentalLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the mental value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewAgilityTb.Text != string.Empty)
+            {
+                short agility = 0;
+                if (short.TryParse(ps2NewAgilityTb.Text, out agility))
+                {
+                    SetValueByOffset(agility, charItem.AgilityLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the agility value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewLuckTb.Text != string.Empty)
+            {
+                short luck = 0;
+                if (short.TryParse(ps2NewLuckTb.Text, out luck))
+                {
+                    SetValueByOffset(luck, charItem.LuckLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the luck value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewDexTb.Text != string.Empty)
+            {
+                short dex = 0;
+                if (short.TryParse(ps2NewDexTb.Text, out dex))
+                {
+                    SetValueByOffset(dex, charItem.DexterityLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the dexterity value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewAttackTb.Text != string.Empty)
+            {
+                short attack = 0;
+                if (short.TryParse(ps2NewAttackTb.Text, out attack))
+                {
+                    SetValueByOffset(attack, charItem.AttackLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the attack value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            if (ps2NewDefTb.Text != string.Empty)
+            {
+                short def = 0;
+                if (short.TryParse(ps2NewDefTb.Text, out def))
+                {
+                    SetValueByOffset(def, charItem.DefenseLoc);
+                }
+                else
+                {
+                    MessageBox.Show("You must enter a numeric value for the defense value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            ResetPS2Controls();
+            PopulatePS2CurrentMeseta();
+            PopulatePS2CharacterDetails(charItem);
+        }
+
         private void UpdatePS3SaveState()
         {
             PS3CharacterItem charItem = ps3CharacterCmb.SelectedItem as PS3CharacterItem;
@@ -1486,7 +2169,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(meseta, PS3_MESETA_LOC);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewSpeedTb.Text != string.Empty)
@@ -1497,7 +2182,9 @@ namespace PStarSaveEditor
                     SetValueByOffset((byte)speed, charItem.SpeedLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the speed value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewMaxHPTb.Text != string.Empty)
@@ -1508,7 +2195,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(hp, charItem.MaxHPLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the max HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewMaxTPTb.Text != string.Empty)
@@ -1519,7 +2208,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(tp, charItem.MaxTPLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the max TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewCurHPTb.Text != string.Empty)
@@ -1530,7 +2221,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(hp, charItem.CurHPLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the current HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewCurTPTb.Text != string.Empty)
@@ -1541,7 +2234,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(tp, charItem.CurTPLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the current TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewDmgTb.Text != string.Empty)
@@ -1552,7 +2247,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(dmg, charItem.DmgLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the damage value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewDefTb.Text != string.Empty)
@@ -1563,7 +2260,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(def, charItem.DefLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the defense value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewExpTb.Text != string.Empty)
@@ -1574,7 +2273,9 @@ namespace PStarSaveEditor
                     SetValueByOffset(exp, charItem.ExpLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the experience value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewLuckTb.Text != string.Empty)
@@ -1585,7 +2286,9 @@ namespace PStarSaveEditor
                     SetValueByOffset((byte)luck, charItem.LuckLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the luck value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             if (ps3NewSkillTb.Text != string.Empty)
@@ -1596,171 +2299,24 @@ namespace PStarSaveEditor
                     SetValueByOffset((byte)skill, charItem.SkillLoc);
                 }
                 else
+                {
                     MessageBox.Show("You must enter a numeric value for the skill value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
 
             short poisoned = 0;
             if (ps3CurPoisonChk.Checked)
+            {
                 poisoned = 64;
+            }
+
             SetValueByOffset((byte)poisoned, charItem.PoisonLoc);
 
             MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             ResetPS3Controls();
             PopulatePS3CurrentMeseta();
             PopulatePS3CharacterDetails(charItem);
-        }
-
-        private void UpdatePS2SaveState()
-        {
-            PS2CharacterItem charItem = ps2CharacterCmb.SelectedItem as PS2CharacterItem;
-            if (ps2NewMesetaTb.Text != string.Empty)
-            {
-                int meseta = 0;
-                if (int.TryParse(ps2NewMesetaTb.Text, out meseta))
-                {
-                    SetValueByOffset(meseta, PS2_MESETA_LOC);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewCurHPTb.Text != string.Empty)
-            {
-                short hp = 0;
-                if (short.TryParse(ps2NewCurHPTb.Text, out hp))
-                {
-                    SetValueByOffset(hp, charItem.CurrentHPLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the current HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewMaxHPTb.Text != string.Empty)
-            {
-                short hp = 0;
-                if (short.TryParse(ps2NewMaxHPTb.Text, out hp))
-                {
-                    SetValueByOffset(hp, charItem.MaxHPLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the max HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewCurTPTb.Text != string.Empty)
-            {
-                short tp = 0;
-                if (short.TryParse(ps2NewCurTPTb.Text, out tp))
-                {
-                    SetValueByOffset(tp, charItem.CurrentTPLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the current TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewMaxTPTb.Text != string.Empty)
-            {
-                short tp = 0;
-                if (short.TryParse(ps2NewMaxTPTb.Text, out tp))
-                {
-                    SetValueByOffset(tp, charItem.MaxTPLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the max TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewExpTb.Text != string.Empty)
-            {
-                int exp = 0;
-                if (int.TryParse(ps2NewExpTb.Text, out exp))
-                {
-                    SetValueByOffset(exp, charItem.ExperienceLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the experience value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewStrTb.Text != string.Empty)
-            {
-                short str = 0;
-                if (short.TryParse(ps2NewStrTb.Text, out str))
-                {
-                    SetValueByOffset(str, charItem.StrengthLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the strength value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewMentalTb.Text != string.Empty)
-            {
-                short mental = 0;
-                if (short.TryParse(ps2NewMentalTb.Text, out mental))
-                {
-                    SetValueByOffset(mental, charItem.MentalLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the mental value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewAgilityTb.Text != string.Empty)
-            {
-                short agility = 0;
-                if (short.TryParse(ps2NewAgilityTb.Text, out agility))
-                {
-                    SetValueByOffset(agility, charItem.AgilityLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the agility value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewLuckTb.Text != string.Empty)
-            {
-                short luck = 0;
-                if (short.TryParse(ps2NewLuckTb.Text, out luck))
-                {
-                    SetValueByOffset(luck, charItem.LuckLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the luck value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewDexTb.Text != string.Empty)
-            {
-                short dex = 0;
-                if (short.TryParse(ps2NewDexTb.Text, out dex))
-                {
-                    SetValueByOffset(dex, charItem.DexterityLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the dexterity value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewAttackTb.Text != string.Empty)
-            {
-                short attack = 0;
-                if (short.TryParse(ps2NewAttackTb.Text, out attack))
-                {
-                    SetValueByOffset(attack, charItem.AttackLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the attack value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            if (ps2NewDefTb.Text != string.Empty)
-            {
-                short def = 0;
-                if (short.TryParse(ps2NewDefTb.Text, out def))
-                {
-                    SetValueByOffset(def, charItem.DefenseLoc);
-                }
-                else
-                    MessageBox.Show("You must enter a numeric value for the defense value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            ResetPS2Controls();
-            PopulatePS2CurrentMeseta();
-            PopulatePS2CharacterDetails(charItem);
-        }
+        }        
 
         private void UpdatePS4SaveState()
         {
@@ -1926,6 +2482,6 @@ namespace PStarSaveEditor
             PopulatePS4CurrentMeseta();
             PopulatePS4CharacterDetails(charItem);
         }
-        #endregion
+        #endregion        
     }
 }

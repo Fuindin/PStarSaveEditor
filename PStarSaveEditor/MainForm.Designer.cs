@@ -200,11 +200,48 @@
             this.ps4CurrentMesetaTb = new System.Windows.Forms.TextBox();
             this.label53 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
+            this.phantasyStarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pstar1Panel = new System.Windows.Forms.Panel();
             this.label25 = new System.Windows.Forms.Label();
+            this.label30 = new System.Windows.Forms.Label();
+            this.label31 = new System.Windows.Forms.Label();
+            this.label44 = new System.Windows.Forms.Label();
+            this.label50 = new System.Windows.Forms.Label();
+            this.label52 = new System.Windows.Forms.Label();
+            this.label79 = new System.Windows.Forms.Label();
+            this.label80 = new System.Windows.Forms.Label();
+            this.label81 = new System.Windows.Forms.Label();
+            this.label82 = new System.Windows.Forms.Label();
+            this.upsPS1SaveStateBtn = new System.Windows.Forms.Button();
+            this.ps1NewDefenseTb = new System.Windows.Forms.TextBox();
+            this.ps1NewAttackTb = new System.Windows.Forms.TextBox();
+            this.ps1NewMaxMPTb = new System.Windows.Forms.TextBox();
+            this.ps1NewCurrentMPTb = new System.Windows.Forms.TextBox();
+            this.ps1NewMaxHPTb = new System.Windows.Forms.TextBox();
+            this.ps1NewCurrentHPTb = new System.Windows.Forms.TextBox();
+            this.label83 = new System.Windows.Forms.Label();
+            this.ps1DefenseTb = new System.Windows.Forms.TextBox();
+            this.ps1AttackTb = new System.Windows.Forms.TextBox();
+            this.ps1LevelTb = new System.Windows.Forms.TextBox();
+            this.ps1MaxMPTb = new System.Windows.Forms.TextBox();
+            this.ps1CurrentMPTb = new System.Windows.Forms.TextBox();
+            this.ps1MaxHPTb = new System.Windows.Forms.TextBox();
+            this.ps1CurrentHPTb = new System.Windows.Forms.TextBox();
+            this.label84 = new System.Windows.Forms.Label();
+            this.ps1NewMesetaTb = new System.Windows.Forms.TextBox();
+            this.label85 = new System.Windows.Forms.Label();
+            this.ps1CurrentMesetaTb = new System.Windows.Forms.TextBox();
+            this.label86 = new System.Windows.Forms.Label();
+            this.ps1CharacterCmb = new System.Windows.Forms.ComboBox();
+            this.label87 = new System.Windows.Forms.Label();
+            this.label51 = new System.Windows.Forms.Label();
+            this.ps1NewExpTb = new System.Windows.Forms.TextBox();
+            this.ps1ExpTb = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.pstar3Panel.SuspendLayout();
             this.pstar2Panel.SuspendLayout();
             this.pstar4Panel.SuspendLayout();
+            this.pstar1Panel.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -271,6 +308,7 @@
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.phantasyStarToolStripMenuItem,
             this.phantasyStar2ToolStripMenuItem,
             this.phantasyStar3ToolStripMenuItem,
             this.phantasyStar4ToolStripMenuItem});
@@ -281,21 +319,21 @@
             // phantasyStar2ToolStripMenuItem
             // 
             this.phantasyStar2ToolStripMenuItem.Name = "phantasyStar2ToolStripMenuItem";
-            this.phantasyStar2ToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.phantasyStar2ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.phantasyStar2ToolStripMenuItem.Text = "Phantasy Star 2";
             this.phantasyStar2ToolStripMenuItem.Click += new System.EventHandler(this.phantasyStar2ToolStripMenuItem_Click);
             // 
             // phantasyStar3ToolStripMenuItem
             // 
             this.phantasyStar3ToolStripMenuItem.Name = "phantasyStar3ToolStripMenuItem";
-            this.phantasyStar3ToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.phantasyStar3ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.phantasyStar3ToolStripMenuItem.Text = "Phantasy Star 3";
             this.phantasyStar3ToolStripMenuItem.Click += new System.EventHandler(this.phantasyStar3ToolStripMenuItem_Click);
             // 
             // phantasyStar4ToolStripMenuItem
             // 
             this.phantasyStar4ToolStripMenuItem.Name = "phantasyStar4ToolStripMenuItem";
-            this.phantasyStar4ToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.phantasyStar4ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.phantasyStar4ToolStripMenuItem.Text = "Phantasy Star 4";
             this.phantasyStar4ToolStripMenuItem.Click += new System.EventHandler(this.phantasyStar4ToolStripMenuItem_Click);
             // 
@@ -316,7 +354,6 @@
             // 
             // pstar3Panel
             // 
-            this.pstar3Panel.Controls.Add(this.label25);
             this.pstar3Panel.Controls.Add(this.label22);
             this.pstar3Panel.Controls.Add(this.ps3UpdSavStateBtn);
             this.pstar3Panel.Controls.Add(this.ps3CurItemCountTb);
@@ -1905,14 +1942,363 @@
             this.label23.TabIndex = 0;
             this.label23.Text = "Phantasy Star 4";
             // 
+            // phantasyStarToolStripMenuItem
+            // 
+            this.phantasyStarToolStripMenuItem.Name = "phantasyStarToolStripMenuItem";
+            this.phantasyStarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.phantasyStarToolStripMenuItem.Text = "Phantasy Star";
+            this.phantasyStarToolStripMenuItem.Click += new System.EventHandler(this.phantasyStarToolStripMenuItem_Click);
+            // 
+            // pstar1Panel
+            // 
+            this.pstar1Panel.Controls.Add(this.label51);
+            this.pstar1Panel.Controls.Add(this.ps1NewExpTb);
+            this.pstar1Panel.Controls.Add(this.ps1ExpTb);
+            this.pstar1Panel.Controls.Add(this.label25);
+            this.pstar1Panel.Controls.Add(this.label30);
+            this.pstar1Panel.Controls.Add(this.label31);
+            this.pstar1Panel.Controls.Add(this.label44);
+            this.pstar1Panel.Controls.Add(this.label50);
+            this.pstar1Panel.Controls.Add(this.label52);
+            this.pstar1Panel.Controls.Add(this.label79);
+            this.pstar1Panel.Controls.Add(this.label80);
+            this.pstar1Panel.Controls.Add(this.label81);
+            this.pstar1Panel.Controls.Add(this.label82);
+            this.pstar1Panel.Controls.Add(this.upsPS1SaveStateBtn);
+            this.pstar1Panel.Controls.Add(this.ps1NewDefenseTb);
+            this.pstar1Panel.Controls.Add(this.ps1NewAttackTb);
+            this.pstar1Panel.Controls.Add(this.ps1NewMaxMPTb);
+            this.pstar1Panel.Controls.Add(this.ps1NewCurrentMPTb);
+            this.pstar1Panel.Controls.Add(this.ps1NewMaxHPTb);
+            this.pstar1Panel.Controls.Add(this.ps1NewCurrentHPTb);
+            this.pstar1Panel.Controls.Add(this.label83);
+            this.pstar1Panel.Controls.Add(this.ps1DefenseTb);
+            this.pstar1Panel.Controls.Add(this.ps1AttackTb);
+            this.pstar1Panel.Controls.Add(this.ps1LevelTb);
+            this.pstar1Panel.Controls.Add(this.ps1MaxMPTb);
+            this.pstar1Panel.Controls.Add(this.ps1CurrentMPTb);
+            this.pstar1Panel.Controls.Add(this.ps1MaxHPTb);
+            this.pstar1Panel.Controls.Add(this.ps1CurrentHPTb);
+            this.pstar1Panel.Controls.Add(this.label84);
+            this.pstar1Panel.Controls.Add(this.ps1NewMesetaTb);
+            this.pstar1Panel.Controls.Add(this.label85);
+            this.pstar1Panel.Controls.Add(this.ps1CurrentMesetaTb);
+            this.pstar1Panel.Controls.Add(this.label86);
+            this.pstar1Panel.Controls.Add(this.ps1CharacterCmb);
+            this.pstar1Panel.Controls.Add(this.label87);
+            this.pstar1Panel.Location = new System.Drawing.Point(12, 77);
+            this.pstar1Panel.Name = "pstar1Panel";
+            this.pstar1Panel.Size = new System.Drawing.Size(808, 552);
+            this.pstar1Panel.TabIndex = 60;
+            // 
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(478, 70);
+            this.label25.Location = new System.Drawing.Point(144, 63);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(45, 13);
-            this.label25.TabIndex = 103;
-            this.label25.Text = "Meseta:";
+            this.label25.Size = new System.Drawing.Size(89, 13);
+            this.label25.TabIndex = 0;
+            this.label25.Text = "Select Character:";
+            this.label25.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label30.Location = new System.Drawing.Point(20, 80);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(356, 13);
+            this.label30.TabIndex = 127;
+            this.label30.Text = "Stats                                                                            " +
+    "    ";
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(34, 348);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(50, 13);
+            this.label31.TabIndex = 0;
+            this.label31.Text = "Defense:";
+            this.label31.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label44
+            // 
+            this.label44.AutoSize = true;
+            this.label44.Location = new System.Drawing.Point(43, 316);
+            this.label44.Name = "label44";
+            this.label44.Size = new System.Drawing.Size(41, 13);
+            this.label44.TabIndex = 0;
+            this.label44.Text = "Attack:";
+            this.label44.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label50
+            // 
+            this.label50.AutoSize = true;
+            this.label50.Location = new System.Drawing.Point(48, 122);
+            this.label50.Name = "label50";
+            this.label50.Size = new System.Drawing.Size(36, 13);
+            this.label50.TabIndex = 0;
+            this.label50.Text = "Level:";
+            this.label50.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label52
+            // 
+            this.label52.AutoSize = true;
+            this.label52.Location = new System.Drawing.Point(36, 282);
+            this.label52.Name = "label52";
+            this.label52.Size = new System.Drawing.Size(49, 13);
+            this.label52.TabIndex = 0;
+            this.label52.Text = "Max MP:";
+            this.label52.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label79
+            // 
+            this.label79.AutoSize = true;
+            this.label79.Location = new System.Drawing.Point(23, 246);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(63, 13);
+            this.label79.TabIndex = 0;
+            this.label79.Text = "Current MP:";
+            this.label79.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label80
+            // 
+            this.label80.AutoSize = true;
+            this.label80.Location = new System.Drawing.Point(36, 216);
+            this.label80.Name = "label80";
+            this.label80.Size = new System.Drawing.Size(48, 13);
+            this.label80.TabIndex = 0;
+            this.label80.Text = "Max HP:";
+            this.label80.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label81
+            // 
+            this.label81.AutoSize = true;
+            this.label81.Location = new System.Drawing.Point(22, 184);
+            this.label81.Name = "label81";
+            this.label81.Size = new System.Drawing.Size(62, 13);
+            this.label81.TabIndex = 0;
+            this.label81.Text = "Current HP:";
+            this.label81.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label82
+            // 
+            this.label82.AutoSize = true;
+            this.label82.Location = new System.Drawing.Point(440, 40);
+            this.label82.Name = "label82";
+            this.label82.Size = new System.Drawing.Size(45, 13);
+            this.label82.TabIndex = 0;
+            this.label82.Text = "Meseta:";
+            this.label82.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // upsPS1SaveStateBtn
+            // 
+            this.upsPS1SaveStateBtn.Location = new System.Drawing.Point(674, 511);
+            this.upsPS1SaveStateBtn.Name = "upsPS1SaveStateBtn";
+            this.upsPS1SaveStateBtn.Size = new System.Drawing.Size(116, 23);
+            this.upsPS1SaveStateBtn.TabIndex = 21;
+            this.upsPS1SaveStateBtn.Text = "Update Save State";
+            this.upsPS1SaveStateBtn.UseVisualStyleBackColor = true;
+            this.upsPS1SaveStateBtn.Click += new System.EventHandler(this.upsPS1SaveStateBtn_Click);
+            // 
+            // ps1NewDefenseTb
+            // 
+            this.ps1NewDefenseTb.Location = new System.Drawing.Point(240, 345);
+            this.ps1NewDefenseTb.Name = "ps1NewDefenseTb";
+            this.ps1NewDefenseTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewDefenseTb.TabIndex = 20;
+            // 
+            // ps1NewAttackTb
+            // 
+            this.ps1NewAttackTb.Location = new System.Drawing.Point(240, 313);
+            this.ps1NewAttackTb.Name = "ps1NewAttackTb";
+            this.ps1NewAttackTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewAttackTb.TabIndex = 18;
+            // 
+            // ps1NewMaxMPTb
+            // 
+            this.ps1NewMaxMPTb.Location = new System.Drawing.Point(240, 279);
+            this.ps1NewMaxMPTb.Name = "ps1NewMaxMPTb";
+            this.ps1NewMaxMPTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewMaxMPTb.TabIndex = 16;
+            // 
+            // ps1NewCurrentMPTb
+            // 
+            this.ps1NewCurrentMPTb.Location = new System.Drawing.Point(240, 246);
+            this.ps1NewCurrentMPTb.Name = "ps1NewCurrentMPTb";
+            this.ps1NewCurrentMPTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewCurrentMPTb.TabIndex = 14;
+            // 
+            // ps1NewMaxHPTb
+            // 
+            this.ps1NewMaxHPTb.Location = new System.Drawing.Point(240, 213);
+            this.ps1NewMaxHPTb.Name = "ps1NewMaxHPTb";
+            this.ps1NewMaxHPTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewMaxHPTb.TabIndex = 12;
+            // 
+            // ps1NewCurrentHPTb
+            // 
+            this.ps1NewCurrentHPTb.Location = new System.Drawing.Point(240, 181);
+            this.ps1NewCurrentHPTb.Name = "ps1NewCurrentHPTb";
+            this.ps1NewCurrentHPTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewCurrentHPTb.TabIndex = 10;
+            // 
+            // label83
+            // 
+            this.label83.AutoSize = true;
+            this.label83.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label83.Location = new System.Drawing.Point(239, 100);
+            this.label83.Name = "label83";
+            this.label83.Size = new System.Drawing.Size(131, 13);
+            this.label83.TabIndex = 0;
+            this.label83.Text = "New                                  ";
+            // 
+            // ps1DefenseTb
+            // 
+            this.ps1DefenseTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1DefenseTb.Location = new System.Drawing.Point(89, 345);
+            this.ps1DefenseTb.Name = "ps1DefenseTb";
+            this.ps1DefenseTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1DefenseTb.TabIndex = 19;
+            // 
+            // ps1AttackTb
+            // 
+            this.ps1AttackTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1AttackTb.Location = new System.Drawing.Point(89, 313);
+            this.ps1AttackTb.Name = "ps1AttackTb";
+            this.ps1AttackTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1AttackTb.TabIndex = 17;
+            // 
+            // ps1LevelTb
+            // 
+            this.ps1LevelTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1LevelTb.Location = new System.Drawing.Point(89, 118);
+            this.ps1LevelTb.Name = "ps1LevelTb";
+            this.ps1LevelTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1LevelTb.TabIndex = 6;
+            // 
+            // ps1MaxMPTb
+            // 
+            this.ps1MaxMPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1MaxMPTb.Location = new System.Drawing.Point(89, 279);
+            this.ps1MaxMPTb.Name = "ps1MaxMPTb";
+            this.ps1MaxMPTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1MaxMPTb.TabIndex = 15;
+            // 
+            // ps1CurrentMPTb
+            // 
+            this.ps1CurrentMPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1CurrentMPTb.Location = new System.Drawing.Point(89, 246);
+            this.ps1CurrentMPTb.Name = "ps1CurrentMPTb";
+            this.ps1CurrentMPTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1CurrentMPTb.TabIndex = 13;
+            // 
+            // ps1MaxHPTb
+            // 
+            this.ps1MaxHPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1MaxHPTb.Location = new System.Drawing.Point(89, 213);
+            this.ps1MaxHPTb.Name = "ps1MaxHPTb";
+            this.ps1MaxHPTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1MaxHPTb.TabIndex = 11;
+            // 
+            // ps1CurrentHPTb
+            // 
+            this.ps1CurrentHPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1CurrentHPTb.Location = new System.Drawing.Point(89, 181);
+            this.ps1CurrentHPTb.Name = "ps1CurrentHPTb";
+            this.ps1CurrentHPTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1CurrentHPTb.TabIndex = 9;
+            // 
+            // label84
+            // 
+            this.label84.AutoSize = true;
+            this.label84.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label84.Location = new System.Drawing.Point(86, 100);
+            this.label84.Name = "label84";
+            this.label84.Size = new System.Drawing.Size(137, 13);
+            this.label84.TabIndex = 0;
+            this.label84.Text = "Current                                ";
+            // 
+            // ps1NewMesetaTb
+            // 
+            this.ps1NewMesetaTb.Location = new System.Drawing.Point(660, 37);
+            this.ps1NewMesetaTb.Name = "ps1NewMesetaTb";
+            this.ps1NewMesetaTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewMesetaTb.TabIndex = 4;
+            // 
+            // label85
+            // 
+            this.label85.AutoSize = true;
+            this.label85.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label85.Location = new System.Drawing.Point(657, 20);
+            this.label85.Name = "label85";
+            this.label85.Size = new System.Drawing.Size(134, 13);
+            this.label85.TabIndex = 0;
+            this.label85.Text = "New                                   ";
+            // 
+            // ps1CurrentMesetaTb
+            // 
+            this.ps1CurrentMesetaTb.BackColor = System.Drawing.Color.White;
+            this.ps1CurrentMesetaTb.Location = new System.Drawing.Point(490, 37);
+            this.ps1CurrentMesetaTb.Name = "ps1CurrentMesetaTb";
+            this.ps1CurrentMesetaTb.ReadOnly = true;
+            this.ps1CurrentMesetaTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1CurrentMesetaTb.TabIndex = 3;
+            // 
+            // label86
+            // 
+            this.label86.AutoSize = true;
+            this.label86.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label86.Location = new System.Drawing.Point(487, 20);
+            this.label86.Name = "label86";
+            this.label86.Size = new System.Drawing.Size(134, 13);
+            this.label86.TabIndex = 0;
+            this.label86.Text = "Current                               ";
+            // 
+            // ps1CharacterCmb
+            // 
+            this.ps1CharacterCmb.FormattingEnabled = true;
+            this.ps1CharacterCmb.Location = new System.Drawing.Point(238, 60);
+            this.ps1CharacterCmb.Name = "ps1CharacterCmb";
+            this.ps1CharacterCmb.Size = new System.Drawing.Size(132, 21);
+            this.ps1CharacterCmb.TabIndex = 5;
+            this.ps1CharacterCmb.SelectedIndexChanged += new System.EventHandler(this.ps1CharacterCmb_SelectedIndexChanged);
+            // 
+            // label87
+            // 
+            this.label87.AutoSize = true;
+            this.label87.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label87.Location = new System.Drawing.Point(12, 12);
+            this.label87.Name = "label87";
+            this.label87.Size = new System.Drawing.Size(110, 17);
+            this.label87.TabIndex = 0;
+            this.label87.Text = "Phantasy Star";
+            // 
+            // label51
+            // 
+            this.label51.AutoSize = true;
+            this.label51.Location = new System.Drawing.Point(21, 153);
+            this.label51.Name = "label51";
+            this.label51.Size = new System.Drawing.Size(63, 13);
+            this.label51.TabIndex = 128;
+            this.label51.Text = "Experience:";
+            this.label51.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // ps1NewExpTb
+            // 
+            this.ps1NewExpTb.Location = new System.Drawing.Point(240, 150);
+            this.ps1NewExpTb.Name = "ps1NewExpTb";
+            this.ps1NewExpTb.Size = new System.Drawing.Size(130, 20);
+            this.ps1NewExpTb.TabIndex = 8;
+            // 
+            // ps1ExpTb
+            // 
+            this.ps1ExpTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1ExpTb.Location = new System.Drawing.Point(89, 150);
+            this.ps1ExpTb.Name = "ps1ExpTb";
+            this.ps1ExpTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1ExpTb.TabIndex = 7;
             // 
             // MainForm
             // 
@@ -1923,9 +2309,10 @@
             this.Controls.Add(this.saveStateFileTb);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.pstar1Panel);
+            this.Controls.Add(this.pstar2Panel);
             this.Controls.Add(this.pstar3Panel);
             this.Controls.Add(this.pstar4Panel);
-            this.Controls.Add(this.pstar2Panel);
             this.MainMenuStrip = this.menuStrip1;
             this.MaximumSize = new System.Drawing.Size(848, 678);
             this.MinimumSize = new System.Drawing.Size(848, 678);
@@ -1941,6 +2328,8 @@
             this.pstar2Panel.PerformLayout();
             this.pstar4Panel.ResumeLayout(false);
             this.pstar4Panel.PerformLayout();
+            this.pstar1Panel.ResumeLayout(false);
+            this.pstar1Panel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2120,7 +2509,43 @@
         private System.Windows.Forms.Label label77;
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.ToolStripMenuItem phantasyStarToolStripMenuItem;
+        private System.Windows.Forms.Panel pstar1Panel;
+        private System.Windows.Forms.Label label51;
+        private System.Windows.Forms.TextBox ps1NewExpTb;
+        private System.Windows.Forms.TextBox ps1ExpTb;
         private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.Label label44;
+        private System.Windows.Forms.Label label50;
+        private System.Windows.Forms.Label label52;
+        private System.Windows.Forms.Label label79;
+        private System.Windows.Forms.Label label80;
+        private System.Windows.Forms.Label label81;
+        private System.Windows.Forms.Label label82;
+        private System.Windows.Forms.Button upsPS1SaveStateBtn;
+        private System.Windows.Forms.TextBox ps1NewDefenseTb;
+        private System.Windows.Forms.TextBox ps1NewAttackTb;
+        private System.Windows.Forms.TextBox ps1NewMaxMPTb;
+        private System.Windows.Forms.TextBox ps1NewCurrentMPTb;
+        private System.Windows.Forms.TextBox ps1NewMaxHPTb;
+        private System.Windows.Forms.TextBox ps1NewCurrentHPTb;
+        private System.Windows.Forms.Label label83;
+        private System.Windows.Forms.TextBox ps1DefenseTb;
+        private System.Windows.Forms.TextBox ps1AttackTb;
+        private System.Windows.Forms.TextBox ps1LevelTb;
+        private System.Windows.Forms.TextBox ps1MaxMPTb;
+        private System.Windows.Forms.TextBox ps1CurrentMPTb;
+        private System.Windows.Forms.TextBox ps1MaxHPTb;
+        private System.Windows.Forms.TextBox ps1CurrentHPTb;
+        private System.Windows.Forms.Label label84;
+        private System.Windows.Forms.TextBox ps1NewMesetaTb;
+        private System.Windows.Forms.Label label85;
+        private System.Windows.Forms.TextBox ps1CurrentMesetaTb;
+        private System.Windows.Forms.Label label86;
+        private System.Windows.Forms.ComboBox ps1CharacterCmb;
+        private System.Windows.Forms.Label label87;
     }
 }
 

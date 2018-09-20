@@ -237,6 +237,12 @@
             this.label51 = new System.Windows.Forms.Label();
             this.ps1NewExpTb = new System.Windows.Forms.TextBox();
             this.ps1ExpTb = new System.Windows.Forms.TextBox();
+            this.label45 = new System.Windows.Forms.Label();
+            this.ps1EquipedWeaponTb = new System.Windows.Forms.TextBox();
+            this.label46 = new System.Windows.Forms.Label();
+            this.ps1EquipedArmorTb = new System.Windows.Forms.TextBox();
+            this.label47 = new System.Windows.Forms.Label();
+            this.ps1EquipedShieldTb = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.pstar3Panel.SuspendLayout();
             this.pstar2Panel.SuspendLayout();
@@ -1951,6 +1957,12 @@
             // 
             // pstar1Panel
             // 
+            this.pstar1Panel.Controls.Add(this.label47);
+            this.pstar1Panel.Controls.Add(this.ps1EquipedShieldTb);
+            this.pstar1Panel.Controls.Add(this.label46);
+            this.pstar1Panel.Controls.Add(this.ps1EquipedArmorTb);
+            this.pstar1Panel.Controls.Add(this.label45);
+            this.pstar1Panel.Controls.Add(this.ps1EquipedWeaponTb);
             this.pstar1Panel.Controls.Add(this.label51);
             this.pstar1Panel.Controls.Add(this.ps1NewExpTb);
             this.pstar1Panel.Controls.Add(this.ps1ExpTb);
@@ -2156,57 +2168,71 @@
             // 
             // ps1DefenseTb
             // 
+            this.ps1DefenseTb.BackColor = System.Drawing.Color.White;
             this.ps1DefenseTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1DefenseTb.Location = new System.Drawing.Point(89, 345);
             this.ps1DefenseTb.Name = "ps1DefenseTb";
+            this.ps1DefenseTb.ReadOnly = true;
             this.ps1DefenseTb.Size = new System.Drawing.Size(132, 20);
             this.ps1DefenseTb.TabIndex = 19;
             // 
             // ps1AttackTb
             // 
+            this.ps1AttackTb.BackColor = System.Drawing.Color.White;
             this.ps1AttackTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1AttackTb.Location = new System.Drawing.Point(89, 313);
             this.ps1AttackTb.Name = "ps1AttackTb";
+            this.ps1AttackTb.ReadOnly = true;
             this.ps1AttackTb.Size = new System.Drawing.Size(132, 20);
             this.ps1AttackTb.TabIndex = 17;
             // 
             // ps1LevelTb
             // 
+            this.ps1LevelTb.BackColor = System.Drawing.Color.White;
             this.ps1LevelTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1LevelTb.Location = new System.Drawing.Point(89, 118);
             this.ps1LevelTb.Name = "ps1LevelTb";
+            this.ps1LevelTb.ReadOnly = true;
             this.ps1LevelTb.Size = new System.Drawing.Size(132, 20);
             this.ps1LevelTb.TabIndex = 6;
             // 
             // ps1MaxMPTb
             // 
+            this.ps1MaxMPTb.BackColor = System.Drawing.Color.White;
             this.ps1MaxMPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1MaxMPTb.Location = new System.Drawing.Point(89, 279);
             this.ps1MaxMPTb.Name = "ps1MaxMPTb";
+            this.ps1MaxMPTb.ReadOnly = true;
             this.ps1MaxMPTb.Size = new System.Drawing.Size(132, 20);
             this.ps1MaxMPTb.TabIndex = 15;
             // 
             // ps1CurrentMPTb
             // 
+            this.ps1CurrentMPTb.BackColor = System.Drawing.Color.White;
             this.ps1CurrentMPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1CurrentMPTb.Location = new System.Drawing.Point(89, 246);
             this.ps1CurrentMPTb.Name = "ps1CurrentMPTb";
+            this.ps1CurrentMPTb.ReadOnly = true;
             this.ps1CurrentMPTb.Size = new System.Drawing.Size(132, 20);
             this.ps1CurrentMPTb.TabIndex = 13;
             // 
             // ps1MaxHPTb
             // 
+            this.ps1MaxHPTb.BackColor = System.Drawing.Color.White;
             this.ps1MaxHPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1MaxHPTb.Location = new System.Drawing.Point(89, 213);
             this.ps1MaxHPTb.Name = "ps1MaxHPTb";
+            this.ps1MaxHPTb.ReadOnly = true;
             this.ps1MaxHPTb.Size = new System.Drawing.Size(132, 20);
             this.ps1MaxHPTb.TabIndex = 11;
             // 
             // ps1CurrentHPTb
             // 
+            this.ps1CurrentHPTb.BackColor = System.Drawing.Color.White;
             this.ps1CurrentHPTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1CurrentHPTb.Location = new System.Drawing.Point(89, 181);
             this.ps1CurrentHPTb.Name = "ps1CurrentHPTb";
+            this.ps1CurrentHPTb.ReadOnly = true;
             this.ps1CurrentHPTb.Size = new System.Drawing.Size(132, 20);
             this.ps1CurrentHPTb.TabIndex = 9;
             // 
@@ -2294,11 +2320,73 @@
             // 
             // ps1ExpTb
             // 
+            this.ps1ExpTb.BackColor = System.Drawing.Color.White;
             this.ps1ExpTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ps1ExpTb.Location = new System.Drawing.Point(89, 150);
             this.ps1ExpTb.Name = "ps1ExpTb";
+            this.ps1ExpTb.ReadOnly = true;
             this.ps1ExpTb.Size = new System.Drawing.Size(132, 20);
             this.ps1ExpTb.TabIndex = 7;
+            // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(32, 379);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(51, 13);
+            this.label45.TabIndex = 129;
+            this.label45.Text = "Weapon:";
+            this.label45.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // ps1EquipedWeaponTb
+            // 
+            this.ps1EquipedWeaponTb.BackColor = System.Drawing.Color.White;
+            this.ps1EquipedWeaponTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1EquipedWeaponTb.Location = new System.Drawing.Point(89, 376);
+            this.ps1EquipedWeaponTb.Name = "ps1EquipedWeaponTb";
+            this.ps1EquipedWeaponTb.ReadOnly = true;
+            this.ps1EquipedWeaponTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1EquipedWeaponTb.TabIndex = 21;
+            // 
+            // label46
+            // 
+            this.label46.AutoSize = true;
+            this.label46.Location = new System.Drawing.Point(43, 409);
+            this.label46.Name = "label46";
+            this.label46.Size = new System.Drawing.Size(37, 13);
+            this.label46.TabIndex = 131;
+            this.label46.Text = "Armor:";
+            this.label46.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // ps1EquipedArmorTb
+            // 
+            this.ps1EquipedArmorTb.BackColor = System.Drawing.Color.White;
+            this.ps1EquipedArmorTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1EquipedArmorTb.Location = new System.Drawing.Point(89, 406);
+            this.ps1EquipedArmorTb.Name = "ps1EquipedArmorTb";
+            this.ps1EquipedArmorTb.ReadOnly = true;
+            this.ps1EquipedArmorTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1EquipedArmorTb.TabIndex = 22;
+            // 
+            // label47
+            // 
+            this.label47.AutoSize = true;
+            this.label47.Location = new System.Drawing.Point(42, 438);
+            this.label47.Name = "label47";
+            this.label47.Size = new System.Drawing.Size(39, 13);
+            this.label47.TabIndex = 133;
+            this.label47.Text = "Shield:";
+            this.label47.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // ps1EquipedShieldTb
+            // 
+            this.ps1EquipedShieldTb.BackColor = System.Drawing.Color.White;
+            this.ps1EquipedShieldTb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ps1EquipedShieldTb.Location = new System.Drawing.Point(89, 436);
+            this.ps1EquipedShieldTb.Name = "ps1EquipedShieldTb";
+            this.ps1EquipedShieldTb.ReadOnly = true;
+            this.ps1EquipedShieldTb.Size = new System.Drawing.Size(132, 20);
+            this.ps1EquipedShieldTb.TabIndex = 23;
             // 
             // MainForm
             // 
@@ -2546,6 +2634,12 @@
         private System.Windows.Forms.Label label86;
         private System.Windows.Forms.ComboBox ps1CharacterCmb;
         private System.Windows.Forms.Label label87;
+        private System.Windows.Forms.Label label47;
+        private System.Windows.Forms.TextBox ps1EquipedShieldTb;
+        private System.Windows.Forms.Label label46;
+        private System.Windows.Forms.TextBox ps1EquipedArmorTb;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.TextBox ps1EquipedWeaponTb;
     }
 }
 

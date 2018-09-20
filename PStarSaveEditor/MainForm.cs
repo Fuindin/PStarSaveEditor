@@ -36,6 +36,7 @@ namespace PStarSaveEditor
         private const string PS4_MESETA_LOC = "118B0";
         private AppPanel activePanel;
         private List<PSItem> ps4ItemsList;
+        private List<PSItem> ps1ItemsList;
         #endregion
 
         #region - Class Properties -
@@ -128,6 +129,7 @@ namespace PStarSaveEditor
             ps1CharacterCmb.SelectedIndex = -1;
             ResetPS1Controls();
             PopulatePS1CharacterList();
+            PopulatePS1ItemsList();
             ShowPanel(AppPanel.PStar1, true);
         }
 
@@ -1364,6 +1366,75 @@ namespace PStarSaveEditor
             ps1NewDefenseTb.Text = string.Empty;
         }
 
+        private void PopulatePS1ItemsList()
+        {
+            ps1ItemsList = new List<PSItem>();
+            ps1ItemsList.Add(new PSItem("00", "Nothing"));
+            ps1ItemsList.Add(new PSItem("01", "Wood Cane"));
+            ps1ItemsList.Add(new PSItem("02", "Short Sword"));
+            ps1ItemsList.Add(new PSItem("03", "Iron Sword"));
+            ps1ItemsList.Add(new PSItem("04", "Wand"));
+            ps1ItemsList.Add(new PSItem("05", "Iron Fang"));
+            ps1ItemsList.Add(new PSItem("06", "Iron Axe"));
+            ps1ItemsList.Add(new PSItem("07", "Titanium Sword"));
+            ps1ItemsList.Add(new PSItem("08", "Ceramic Sword"));
+            ps1ItemsList.Add(new PSItem("09", "Needle Gun"));
+            ps1ItemsList.Add(new PSItem("0A", "Silver Fang"));
+            ps1ItemsList.Add(new PSItem("0B", "Heat Gun"));
+            ps1ItemsList.Add(new PSItem("0C", "Light Sabre"));
+            ps1ItemsList.Add(new PSItem("0D", "Laser Gun"));
+            ps1ItemsList.Add(new PSItem("0E", "Laconia Sword"));
+            ps1ItemsList.Add(new PSItem("0F", "Loconia Axe"));
+            ps1ItemsList.Add(new PSItem("10", "Leather Armor"));
+            ps1ItemsList.Add(new PSItem("11", "White Mantle"));
+            ps1ItemsList.Add(new PSItem("12", "Light Suit"));
+            ps1ItemsList.Add(new PSItem("13", "Iron Armor"));
+            ps1ItemsList.Add(new PSItem("14", "Thick Fur"));
+            ps1ItemsList.Add(new PSItem("15", "Zirconia Armor"));
+            ps1ItemsList.Add(new PSItem("16", "Diamond Armor"));
+            ps1ItemsList.Add(new PSItem("17", "Laconia Armor"));
+            ps1ItemsList.Add(new PSItem("18", "Frade Mantle"));
+            ps1ItemsList.Add(new PSItem("19", "Leather Shield"));
+            ps1ItemsList.Add(new PSItem("1A", "Bronze Shield"));
+            ps1ItemsList.Add(new PSItem("1B", "Iron Shield"));
+            ps1ItemsList.Add(new PSItem("1C", "Ceramic Shield"));
+            ps1ItemsList.Add(new PSItem("1D", "Gloves"));
+            ps1ItemsList.Add(new PSItem("1E", "Laser Shield"));
+            ps1ItemsList.Add(new PSItem("1F", "Mirror Shield"));
+            ps1ItemsList.Add(new PSItem("20", "Laconia Shield"));
+            ps1ItemsList.Add(new PSItem("21", "Land Rover"));
+            ps1ItemsList.Add(new PSItem("22", "Hovercraft"));
+            ps1ItemsList.Add(new PSItem("23", "Ice Digger"));
+            ps1ItemsList.Add(new PSItem("24", "Cola"));
+            ps1ItemsList.Add(new PSItem("25", "Burger"));
+            ps1ItemsList.Add(new PSItem("26", "Flute"));
+            ps1ItemsList.Add(new PSItem("27", "Flash"));
+            ps1ItemsList.Add(new PSItem("28", "Escaper"));
+            ps1ItemsList.Add(new PSItem("29", "Transfer"));
+            ps1ItemsList.Add(new PSItem("2A", "Magic Hat"));
+            ps1ItemsList.Add(new PSItem("2B", "Alsulin"));
+            ps1ItemsList.Add(new PSItem("2C", "Polymeteral"));
+            ps1ItemsList.Add(new PSItem("2D", "Dungeon Key"));
+            ps1ItemsList.Add(new PSItem("2E", "Sphere"));
+            ps1ItemsList.Add(new PSItem("2F", "Eclipse Torch"));
+            ps1ItemsList.Add(new PSItem("30", "Aero Prism"));
+            ps1ItemsList.Add(new PSItem("31", "Nuts"));
+            ps1ItemsList.Add(new PSItem("32", "Hapsby the Robot"));
+            ps1ItemsList.Add(new PSItem("33", "Road Pass"));
+            ps1ItemsList.Add(new PSItem("34", "Passport"));
+            ps1ItemsList.Add(new PSItem("35", "Compass"));
+            ps1ItemsList.Add(new PSItem("36", "Cake"));
+            ps1ItemsList.Add(new PSItem("37", "Letter"));
+            ps1ItemsList.Add(new PSItem("38", "Laconia Pot"));
+            ps1ItemsList.Add(new PSItem("39", "Magic Lamp"));
+            ps1ItemsList.Add(new PSItem("3A", "Amber Eye"));
+            ps1ItemsList.Add(new PSItem("3B", "Gas Shield"));
+            ps1ItemsList.Add(new PSItem("3C", "Crystal"));
+            ps1ItemsList.Add(new PSItem("3D", "M System"));
+            ps1ItemsList.Add(new PSItem("3E", "Miracle Key"));
+            ps1ItemsList.Add(new PSItem("3F", "Debug"));
+        }
+
         private void PopulatePS1CharacterList()
         {
             ps1CharacterCmb.Items.Clear();
@@ -1377,9 +1448,9 @@ namespace PStarSaveEditor
                 "44C3",
                 "44C4",
                 "44C5",
-                string.Empty,
-                string.Empty,
-                string.Empty);
+                "44C6",
+                "44C7",
+                "44C8");
             ps1CharacterCmb.Items.Add(alisItem);
 
             PS1CharacterItem myauItem = new PS1CharacterItem("Myau",
@@ -1391,9 +1462,9 @@ namespace PStarSaveEditor
                 "44D3",
                 "44D4",
                 "44D5",
-                string.Empty,
-                string.Empty,
-                string.Empty);
+                "44D6",
+                "44D7",
+                "44D8");
             ps1CharacterCmb.Items.Add(myauItem);
 
             PS1CharacterItem odinItem = new PS1CharacterItem("Odin",
@@ -1405,9 +1476,9 @@ namespace PStarSaveEditor
                 "44E3",
                 "44E4",
                 "44E5",
-                string.Empty,
-                string.Empty,
-                string.Empty);
+                "44E6",
+                "44E7",
+                "44E8");
             ps1CharacterCmb.Items.Add(odinItem);
 
             PS1CharacterItem noahItem = new PS1CharacterItem("Noah",
@@ -1419,9 +1490,9 @@ namespace PStarSaveEditor
                 "44F3",
                 "44F4",
                 "44F5",
-                string.Empty,
-                string.Empty,
-                string.Empty);
+                "44F6",
+                "44F7",
+                "44F8");
             ps1CharacterCmb.Items.Add(noahItem);
 
             ps1CharacterCmb.DisplayMember = "Name";
@@ -1482,6 +1553,31 @@ namespace PStarSaveEditor
             value = GetValueByOffset(charItem.DefenseLoc, 1);
             val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
             ps1DefenseTb.Text = val.ToString();
+
+            value = GetValueByOffset(charItem.EquippedWeaponLoc, 1);
+            ps1EquipedWeaponTb.Text = GetPS1ItemNameByID(value);
+
+            value = GetValueByOffset(charItem.EquippedArmorLoc, 1);
+            ps1EquipedArmorTb.Text = GetPS1ItemNameByID(value);
+
+            value = GetValueByOffset(charItem.EquippedShieldLoc, 1);
+            ps1EquipedShieldTb.Text = GetPS1ItemNameByID(value);
+        }
+
+        private string GetPS1ItemNameByID(string id)
+        {
+            PSItem item = ps1ItemsList.FirstOrDefault(i => i.ItemID == id);
+            string name = string.Empty;
+            if (item != null)
+            {
+                name = item.ItemName;
+            }
+            else
+            {
+                name = "Debug";
+            }
+
+            return name;
         }
 
         private void ResetPS2Controls()

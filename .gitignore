@@ -1,0 +1,61 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache / options
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Build and upgrade logs
+UpgradeLog*.htm
+UpgradeLog*.XML
+_UpgradeReport_Files/
+*.log
+*.tlog
+*.binlog
+
+# ReSharper / Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+.idea/
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+packages/
+!packages/build/
+
+# ClickOnce / publish output
+publish/
+*.publishsettings
+*.azurePubxml
+*.pubxml.user
+
+# Installer output
+[Ee]xpress/
+*.msi
+*.msm
+*.msp
+*.cab
+
+# Misc
+*.cache
+*.tmp
+*.bak
+*.swp
+Thumbs.db
+Desktop.ini

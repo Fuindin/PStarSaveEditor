@@ -26,8 +26,6 @@ namespace PStarSaveEditor
         #endregion
 
         #region - Class Fields -
-        private bool fileLoaded;
-        private const int PS3_TOTAL_UPDATE_FIELDS = 12;
         private const ushort PS1_SHORT_MAX = 65535;
         private const short PS1_BYTE_MAX = 255;
         private const short PS4_BYTE_MAX = 255;
@@ -41,10 +39,15 @@ namespace PStarSaveEditor
         #endregion
 
         #region - Class Properties -
+        /// <summary>
+        /// Derived from the selected path rather than tracked in a field. The game menu
+        /// handlers clear the path when switching games, and a file can be moved or
+        /// deleted while the application is open, so a cached flag drifts out of step
+        /// with what is actually readable.
+        /// </summary>
         public bool FileLoaded
         {
-            get { return fileLoaded; }
-            set { fileLoaded = value; }
+            get { return saveStateFileTb.Text != string.Empty && File.Exists(saveStateFileTb.Text); }
         }
         public AppPanel ActivePanel
         {
@@ -65,7 +68,6 @@ namespace PStarSaveEditor
         {
             ActivePanel = AppPanel.None;
             ShowPanel(AppPanel.All, false);
-            FileLoaded = false;
         }
 
         private void browseBtn_Click(object sender, EventArgs e)
@@ -82,7 +84,6 @@ namespace PStarSaveEditor
                 if (openFD.ShowDialog() != DialogResult.Cancel)
                 {
                     saveStateFileTb.Text = openFD.FileName;
-                    FileLoaded = true;
                     switch (ActivePanel)
                     {
                         case AppPanel.PStar1:
@@ -243,26 +244,76 @@ namespace PStarSaveEditor
 
         private void upsPS1SaveStateBtn_Click(object sender, EventArgs e)
         {
-            UpdatePS1SaveState();
-        }        
+            if (PrepareForUpdate())
+            {
+                UpdatePS1SaveState();
+            }
+        }
 
         private void ps2UpdSavStateBtn_Click(object sender, EventArgs e)
         {
-            UpdatePS2SaveState();
+            if (PrepareForUpdate())
+            {
+                UpdatePS2SaveState();
+            }
         }
 
         private void ps3UpdSavStateBtn_Click(object sender, EventArgs e)
         {
-            UpdatePS3SaveState();
+            if (PrepareForUpdate())
+            {
+                UpdatePS3SaveState();
+            }
         }
 
         private void ps4UpdSavStateBtn_Click(object sender, EventArgs e)
         {
-            UpdatePS4SaveState();
+            if (PrepareForUpdate())
+            {
+                UpdatePS4SaveState();
+            }
         }
         #endregion
 
         #region - Class Methods -
+        /// <summary>
+        /// Runs before any save state is written. Confirms a file is actually loaded,
+        /// then takes a timestamped backup beside it. The README asks the user to make
+        /// a backup by hand before editing, which is easy to forget and impossible to
+        /// act on once a bad write has already happened. Returns false to abort.
+        /// </summary>
+        private bool PrepareForUpdate()
+        {
+            if (!FileLoaded)
+            {
+                MessageBox.Show("You must load a save state file before it can be updated.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            string savePath = saveStateFileTb.Text;
+            string backupPath = savePath + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bak";
+
+            try
+            {
+                // A backup from the same second is just as good, so leave it in place
+                // rather than failing the copy on a name that already exists.
+                if (!File.Exists(backupPath))
+                {
+                    File.Copy(savePath, backupPath);
+                }
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message + " Occurred while attempting to back up the save state file.");
+                return MessageBox.Show("The save state could not be backed up to:" + Environment.NewLine
+                        + backupPath + Environment.NewLine + Environment.NewLine
+                        + "Continue editing without a backup?",
+                        "Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+            }
+
+            return true;
+        }
+
         private void LogError(string errMsg)
         {
             // Create a write and open the file
@@ -539,37 +590,37 @@ namespace PStarSaveEditor
             byte[] bytes = HexStringToBytes(value);
             ps3CurNameTb.Text = Encoding.ASCII.GetString(bytes);
             value = GetValueByOffset(charItem.SpeedLoc, 1);
-            long val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            long val = ParseHexOrZero(value);
             ps3CurSpeedTb.Text = val.ToString();
             value = GetValueByOffset(charItem.LevelLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurLevelTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MaxHPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurMaxHPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MaxTPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurMaxTPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.CurHPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurCurHPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.CurTPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurCurTPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.DmgLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurDmgTb.Text = val.ToString();
             value = GetValueByOffset(charItem.DefLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurDefTb.Text = val.ToString();
             value = GetValueByOffset(charItem.ExpLoc, 4);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurExpTb.Text = val.ToString();
             value = GetValueByOffset(charItem.LuckLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurLuckTb.Text = val.ToString();
             value = GetValueByOffset(charItem.SkillLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps3CurSkillTb.Text = val.ToString();
             value = GetValueByOffset(charItem.PoisonLoc, 1);
             if (value == "40")
@@ -581,7 +632,7 @@ namespace PStarSaveEditor
                 ps3CurPoisonChk.Checked = false;
             }
             //value = GetValueByOffset(charItem.ItemCntLoc, 2);
-            //val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            //val = ParseHexOrZero(value);
             //curItemCountTb.Text = val.ToString();
         }
 
@@ -615,11 +666,30 @@ namespace PStarSaveEditor
             return value;
         }
 
+        /// <summary>
+        /// Parses a hex string read out of the save state. GetValueByOffset returns an
+        /// empty string when the read fails, so this must tolerate that rather than
+        /// throwing a FormatException out of the display code.
+        /// </summary>
+        private long ParseHexOrZero(string hexValue)
+        {
+            long result = 0;
+
+            if (!string.IsNullOrEmpty(hexValue))
+            {
+                long.TryParse(hexValue, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out result);
+            }
+
+            return result;
+        }
+
         private string ReverseHexPairs(string hexString)
         {
             string newHex = string.Empty;
 
-            if (hexString.Length % 2 != 0)
+            // Only a two byte value can be swapped here. Anything else, including the
+            // empty string a failed read returns, is passed through untouched.
+            if (hexString.Length != 4)
             {
                 newHex = hexString;
             }
@@ -627,7 +697,7 @@ namespace PStarSaveEditor
             {
                 newHex = hexString.Substring(2, 2);
                 newHex += hexString.Substring(0, 2);
-            }            
+            }
 
             return newHex;
         }
@@ -846,7 +916,7 @@ namespace PStarSaveEditor
         private string GetCurrentPS4Meseta()
         {
             string hexVal = GetValueByOffset(PS4_MESETA_LOC, 4);
-            long meseta = long.Parse(hexVal, System.Globalization.NumberStyles.HexNumber);
+            long meseta = ParseHexOrZero(hexVal);
             return meseta.ToString();
         }
 
@@ -857,32 +927,7 @@ namespace PStarSaveEditor
 
         private void ResetPS4Controls()
         {
-            ps4CurrentLevelTb.Text = string.Empty;
-            ps4CurExpTb.Text = string.Empty;
-            ps4NewExpTb.Text = string.Empty;
-            ps4CurrentMesetaTb.Text = string.Empty;
-            ps4NewMesetaTb.Text = string.Empty;
-            ps4CurrentLevelTb.Text = string.Empty;
-            ps4CurHPTb.Text = string.Empty;
-            ps4NewCurHPTb.Text = string.Empty;
-            ps4MaxHPTb.Text = string.Empty;
-            ps4NewMaxHPTb.Text = string.Empty;
-            ps4CurTPTb.Text = string.Empty;
-            ps4NewCurTPTb.Text = string.Empty;
-            ps4MaxTPTb.Text = string.Empty;
-            ps4NewMaxTPTb.Text = string.Empty;
-            ps4StrTb.Text = string.Empty;
-            ps4NewStrTb.Text = string.Empty;
-            ps4MentalTb.Text = string.Empty;
-            ps4NewMaxHPTb.Text = string.Empty;
-            ps4AgilityTb.Text = string.Empty;
-            ps4NewAgilityTb.Text = string.Empty;
-            ps4DexTb.Text = string.Empty;
-            ps4NewDexTb.Text = string.Empty;
-            ps4WeaponSlot1Tb.Text = string.Empty;
-            ps4WeaponSlot2Tb.Text = string.Empty;
-            ps4HelmetTb.Text = string.Empty;
-            ps4ArmorTb.Text = string.Empty;
+            ClearPanelFields(pstar4Panel);
         }
 
         private void PopulatePS4ItemsList()
@@ -1270,34 +1315,34 @@ namespace PStarSaveEditor
         private void PopulatePS4CharacterDetails(PS4CharacterItem charItem)
         {
             string value = GetValueByOffset(charItem.LevelLoc, 1);
-            long val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            long val = ParseHexOrZero(value);
             ps4CurrentLevelTb.Text = val.ToString();
             value = GetValueByOffset(charItem.ExpLoc, 4);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4CurExpTb.Text = val.ToString();
             value = GetValueByOffset(charItem.CurrentHPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4CurHPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MaxHPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4MaxHPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.CurrentTPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4CurTPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MaxTPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4MaxTPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.StrengthLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4StrTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MentalLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4MentalTb.Text = val.ToString();
             value = GetValueByOffset(charItem.AgilityLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4AgilityTb.Text = val.ToString();
             value = GetValueByOffset(charItem.DexterityLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4DexTb.Text = val.ToString();
             value = GetValueByOffset(charItem.WeaponSlot1Loc, 1);
             ps4WeaponSlot1Tb.Text = GetItemNameByID(value);
@@ -1308,10 +1353,10 @@ namespace PStarSaveEditor
             value = GetValueByOffset(charItem.ArmorLoc, 1);
             ps4ArmorTb.Text = GetItemNameByID(value);
             value = GetValueByOffset(charItem.AttackLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4AtkPowTb.Text = val.ToString();
             value = GetValueByOffset(charItem.DefenseLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps4DefPowTb.Text = val.ToString();
         }
 
@@ -1327,25 +1372,40 @@ namespace PStarSaveEditor
             return name;
         }
 
+        /// <summary>
+        /// Blanks every field on a game panel. Walking the panel is deliberate: the
+        /// hand written reset methods this replaces had each drifted out of step with
+        /// their panel, leaving the previous character's values on screen.
+        /// </summary>
+        private void ClearPanelFields(Control panel)
+        {
+            foreach (Control control in panel.Controls)
+            {
+                TextBox textBox = control as TextBox;
+                if (textBox != null)
+                {
+                    textBox.Text = string.Empty;
+                    continue;
+                }
+
+                CheckBox checkBox = control as CheckBox;
+                if (checkBox != null)
+                {
+                    checkBox.Checked = false;
+                    continue;
+                }
+
+                // Recurse so fields nested in a container are not missed
+                if (control.HasChildren)
+                {
+                    ClearPanelFields(control);
+                }
+            }
+        }
+
         private void ResetPS1Controls()
         {
-            ps1CurrentMesetaTb.Text = string.Empty;
-            ps1NewMesetaTb.Text = string.Empty;
-            ps1LevelTb.Text = string.Empty;
-            ps1ExpTb.Text = string.Empty;
-            ps1NewExpTb.Text = string.Empty;
-            ps1CurrentHPTb.Text = string.Empty;
-            ps1NewCurrentHPTb.Text = string.Empty;
-            ps1MaxHPTb.Text = string.Empty;
-            ps1NewMaxHPTb.Text = string.Empty;
-            ps1CurrentMPTb.Text = string.Empty;
-            ps1NewCurrentMPTb.Text = string.Empty;
-            ps1MaxMPTb.Text = string.Empty;
-            ps1NewMaxMPTb.Text = string.Empty;
-            ps1AttackTb.Text = string.Empty;
-            ps1NewAttackTb.Text = string.Empty;
-            ps1DefenseTb.Text = string.Empty;
-            ps1NewDefenseTb.Text = string.Empty;
+            ClearPanelFields(pstar1Panel);
         }
 
         private void PopulatePS1ItemsList()
@@ -1484,7 +1544,7 @@ namespace PStarSaveEditor
         {
             string hexVal = GetValueByOffset(PS1_MESETA_LOC, 2);
             hexVal = ReverseHexPairs(hexVal);
-            long meseta = long.Parse(hexVal, System.Globalization.NumberStyles.HexNumber);
+            long meseta = ParseHexOrZero(hexVal);
             return meseta.ToString();
         }
 
@@ -1496,28 +1556,28 @@ namespace PStarSaveEditor
         private void PopulatePS1CharacterDetails(PS1CharacterItem charItem)
         {
             string value = GetValueByOffset(charItem.LevelLoc, 1);
-            long val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            long val = ParseHexOrZero(value);
             ps1LevelTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.ExperienceLoc, 2);
             value = ReverseHexPairs(value);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1ExpTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.CurrentHPLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1CurrentHPTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.MaxHPLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1MaxHPTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.CurrentMPLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1CurrentMPTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.MaxMPLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1MaxMPTb.Text = val.ToString();
             if (charItem.Name == "Odin")
             {
@@ -1529,11 +1589,11 @@ namespace PStarSaveEditor
             }
 
             value = GetValueByOffset(charItem.AttackLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1AttackTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.DefenseLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps1DefenseTb.Text = val.ToString();
 
             value = GetValueByOffset(charItem.EquippedWeaponLoc, 1);
@@ -1564,36 +1624,12 @@ namespace PStarSaveEditor
 
         private void ResetPS2Controls()
         {
-            ps2CurMesetaTb.Text = string.Empty;
-            ps2NewMesetaTb.Text = string.Empty;
-            ps2CurHPTb.Text = string.Empty;
-            ps2MaxHPTb.Text = string.Empty;
-            ps2CurTPTb.Text = string.Empty;
-            ps2LevelTb.Text = string.Empty;
-            ps2ExpTb.Text = string.Empty;
-            ps2StrTb.Text = string.Empty;
-            ps2MentalTb.Text = string.Empty;
-            ps2AgilityTb.Text = string.Empty;
-            ps2LuckTb.Text = string.Empty;
-            ps2DexTb.Text = string.Empty;
-            ps2AttackTb.Text = string.Empty;
-            ps2DefTb.Text = string.Empty;
-            ps2NewCurHPTb.Text = string.Empty;
-            ps2NewMaxHPTb.Text = string.Empty;
-            ps2NewCurTPTb.Text = string.Empty;
-            ps2NewExpTb.Text = string.Empty;
-            ps2NewStrTb.Text = string.Empty;
-            ps2NewMentalTb.Text = string.Empty;
-            ps2NewAgilityTb.Text = string.Empty;
-            ps2NewLuckTb.Text = string.Empty;
-            ps2NewDexTb.Text = string.Empty;
-            ps2NewAttackTb.Text = string.Empty;
-            ps2NewDefTb.Text = string.Empty;
+            ClearPanelFields(pstar2Panel);
         }
 
         private void PopulatePS2CharacterList()
         {
-            ps3CharacterCmb.Items.Clear();
+            ps2CharacterCmb.Items.Clear();
 
             PS2CharacterItem rolfItem = new PS2CharacterItem("Rolf Landale",
                 "E47A",
@@ -1729,7 +1765,7 @@ namespace PStarSaveEditor
         private string GetPS2CurrentMeseta()
         {
             string hexVal = GetValueByOffset(PS2_MESETA_LOC, 4);
-            long meseta = long.Parse(hexVal, System.Globalization.NumberStyles.HexNumber);
+            long meseta = ParseHexOrZero(hexVal);
             return meseta.ToString();
         }
 
@@ -1741,50 +1777,50 @@ namespace PStarSaveEditor
         private void PopulatePS2CharacterDetails(PS2CharacterItem charItem)
         {
             string value = GetValueByOffset(charItem.CurrentHPLoc, 2);
-            long val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            long val = ParseHexOrZero(value);
             ps2CurHPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MaxHPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2MaxHPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.CurrentTPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2CurTPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MaxTPLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2MaxTPTb.Text = val.ToString();
             value = GetValueByOffset(charItem.LevelLoc, 1);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2LevelTb.Text = val.ToString();
             value = GetValueByOffset(charItem.ExperienceLoc, 4);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2ExpTb.Text = val.ToString();
             value = GetValueByOffset(charItem.StrengthLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2StrTb.Text = val.ToString();
             value = GetValueByOffset(charItem.MentalLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2MentalTb.Text = val.ToString();
             value = GetValueByOffset(charItem.AgilityLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2AgilityTb.Text = val.ToString();
             value = GetValueByOffset(charItem.LuckLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2LuckTb.Text = val.ToString();
             value = GetValueByOffset(charItem.DexterityLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2DexTb.Text = val.ToString();
             value = GetValueByOffset(charItem.AttackLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2AttackTb.Text = val.ToString();
             value = GetValueByOffset(charItem.DefenseLoc, 2);
-            val = long.Parse(value, System.Globalization.NumberStyles.HexNumber);
+            val = ParseHexOrZero(value);
             ps2DefTb.Text = val.ToString();
         }
 
         private string GetPS3CurrentMeseta()
         {
             string hexVal = GetValueByOffset(PS3_MESETA_LOC, 4);
-            long meseta = long.Parse(hexVal, System.Globalization.NumberStyles.HexNumber);
+            long meseta = ParseHexOrZero(hexVal);
             return meseta.ToString();
         }
 
@@ -1816,17 +1852,7 @@ namespace PStarSaveEditor
 
         private void ResetPS3Controls()
         {
-            ps3NewMesetaTb.Text = string.Empty;
-            ps3NewSpeedTb.Text = string.Empty;
-            ps3NewMaxHPTb.Text = string.Empty;
-            ps3NewMaxTPTb.Text = string.Empty;
-            ps3NewCurHPTb.Text = string.Empty;
-            ps3NewCurTPTb.Text = string.Empty;
-            ps3NewDmgTb.Text = string.Empty;
-            ps3NewDefTb.Text = string.Empty;
-            ps3NewExpTb.Text = string.Empty;
-            ps3NewLuckTb.Text = string.Empty;
-            ps3NewSkillTb.Text = string.Empty;
+            ClearPanelFields(pstar3Panel);
         }
 
         private void UpdatePS1SaveState()
@@ -2492,7 +2518,7 @@ namespace PStarSaveEditor
                 }
                 else
                 {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("You must enter a numeric value for the new current HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
 
@@ -2505,7 +2531,7 @@ namespace PStarSaveEditor
                 }
                 else
                 {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("You must enter a numeric value for the new max HP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
 
@@ -2518,7 +2544,7 @@ namespace PStarSaveEditor
                 }
                 else
                 {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("You must enter a numeric value for the new current TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
 
@@ -2531,7 +2557,7 @@ namespace PStarSaveEditor
                 }
                 else
                 {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("You must enter a numeric value for the new max TP value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
 

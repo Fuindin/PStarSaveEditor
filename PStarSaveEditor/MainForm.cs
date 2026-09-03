@@ -30,6 +30,7 @@ namespace PStarSaveEditor
         private const int PS3_TOTAL_UPDATE_FIELDS = 12;
         private const ushort PS1_SHORT_MAX = 65535;
         private const short PS1_BYTE_MAX = 255;
+        private const short PS4_BYTE_MAX = 255;
         private const string PS1_MESETA_LOC = "459C";
         private const string PS2_MESETA_LOC = "EA98";
         private const string PS3_MESETA_LOC = "E4B8";
@@ -267,13 +268,22 @@ namespace PStarSaveEditor
             // Create a write and open the file
             string filePath = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
             filePath += @"\errorlog.txt";
-            TextWriter writer = new StreamWriter(filePath, true);
 
-            // Write the error message to the error log
-            writer.WriteLine(errMsg + " Added: " + DateTime.Now.ToString());
-
-            // Close the stream
-            writer.Close();
+            // This is called from inside the catch blocks of the file read and write
+            // methods, so it must never throw. If the log cannot be written there is
+            // nowhere left to report that, and taking down the application over it
+            // would lose the edit the user was making.
+            try
+            {
+                using (TextWriter writer = new StreamWriter(filePath, true))
+                {
+                    // Write the error message to the error log
+                    writer.WriteLine(errMsg + " Added: " + DateTime.Now.ToString());
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void ClearErrorLog()
@@ -578,15 +588,16 @@ namespace PStarSaveEditor
         private string GetValueByOffset(string offset, int bytesToRead)
         {
             string value = string.Empty;
-            BinaryReader reader = null;
 
             try
             {
-                reader = new BinaryReader(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                // Set the position of the reader by the offset
-                reader.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                // Read the offset
-                value = BitConverter.ToString(reader.ReadBytes(bytesToRead)).Replace("-", null);
+                using (BinaryReader reader = new BinaryReader(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                {
+                    // Set the position of the reader by the offset
+                    reader.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    // Read the offset
+                    value = BitConverter.ToString(reader.ReadBytes(bytesToRead)).Replace("-", null);
+                }
             }
             catch (IOException ioe)
             {
@@ -599,11 +610,6 @@ namespace PStarSaveEditor
             catch (Exception e)
             {
                 LogError(e.Message + " Occurred when attempting to read a value by its offset.");
-            }
-            finally
-            {
-                reader.Close();
-                reader.Dispose();
             }
 
             return value;
@@ -629,15 +635,16 @@ namespace PStarSaveEditor
         private bool SetValueByOffset(string value, string offset)
         {
             bool success = false;
-            BinaryWriter writer = null;
 
             try
             {
-                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                int valNum = Convert.ToInt32(value);
-                byte[] bytes = BitConverter.GetBytes(valNum).Reverse().ToArray();
-                writer.Write(bytes);
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                {
+                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    int valNum = Convert.ToInt32(value);
+                    byte[] bytes = BitConverter.GetBytes(valNum).Reverse().ToArray();
+                    writer.Write(bytes);
+                }
                 success = true;
             }
             catch (IOException ioe)
@@ -654,11 +661,6 @@ namespace PStarSaveEditor
             {
                 LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
                 success = false;
-            }
-            finally
-            {
-                writer.Close();
-                writer.Dispose();
             }
 
             return success;
@@ -667,14 +669,15 @@ namespace PStarSaveEditor
         private bool SetValueByOffset(long value, string offset)
         {
             bool success = false;
-            BinaryWriter writer = null;
 
             try
             {
-                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                writer.Write(bytes);
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                {
+                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                    writer.Write(bytes);
+                }
 
                 success = true;
             }
@@ -692,11 +695,6 @@ namespace PStarSaveEditor
             {
                 LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
                 success = false;
-            }
-            finally
-            {
-                writer.Close();
-                writer.Dispose();
             }
 
             return success;
@@ -705,14 +703,15 @@ namespace PStarSaveEditor
         private bool SetValueByOffset(int value, string offset)
         {
             bool success = false;
-            BinaryWriter writer = null;
 
             try
             {
-                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                writer.Write(bytes);
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                {
+                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                    writer.Write(bytes);
+                }
 
                 success = true;
             }
@@ -730,11 +729,6 @@ namespace PStarSaveEditor
             {
                 LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
                 success = false;
-            }
-            finally
-            {
-                writer.Close();
-                writer.Dispose();
             }
 
             return success;
@@ -743,14 +737,15 @@ namespace PStarSaveEditor
         private bool SetValueByOffset(short value, string offset)
         {
             bool success = false;
-            BinaryWriter writer = null;
 
             try
             {
-                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                writer.Write(bytes);
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                {
+                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                    writer.Write(bytes);
+                }
 
                 success = true;
             }
@@ -768,11 +763,6 @@ namespace PStarSaveEditor
             {
                 LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
                 success = false;
-            }
-            finally
-            {
-                writer.Close();
-                writer.Dispose();
             }
 
             return success;
@@ -781,22 +771,23 @@ namespace PStarSaveEditor
         private bool SetValueByOffset(ushort value, string offset, bool reverse)
         {
             bool success = false;
-            BinaryWriter writer = null;
 
             try
             {
-                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                byte[] bytes = new byte[]{ };
-                if (reverse)
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
                 {
-                    bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    byte[] bytes = new byte[]{ };
+                    if (reverse)
+                    {
+                        bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+                    }
+                    else
+                    {
+                        bytes = BitConverter.GetBytes(value).ToArray();
+                    }
+                    writer.Write(bytes);
                 }
-                else
-                {
-                    bytes = BitConverter.GetBytes(value).ToArray();
-                }
-                writer.Write(bytes);
 
                 success = true;
             }
@@ -814,11 +805,6 @@ namespace PStarSaveEditor
             {
                 LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
                 success = false;
-            }
-            finally
-            {
-                writer.Close();
-                writer.Dispose();
             }
 
             return success;
@@ -827,13 +813,14 @@ namespace PStarSaveEditor
         private bool SetValueByOffset(byte value, string offset)
         {
             bool success = false;
-            BinaryWriter writer = null;
 
             try
             {
-                writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open));
-                writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                writer.Write(value);
+                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                {
+                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+                    writer.Write(value);
+                }
 
                 success = true;
             }
@@ -851,11 +838,6 @@ namespace PStarSaveEditor
             {
                 LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
                 success = false;
-            }
-            finally
-            {
-                writer.Close();
-                writer.Dispose();
             }
 
             return success;
@@ -1259,7 +1241,7 @@ namespace PStarSaveEditor
                 "11E45",
                 "11E46",
                 "11E47",
-                "11E9D",
+                "11E1D",
                 "11E21");
             ps4CharacterCmb.Items.Add(kyraItem);
 
@@ -2092,6 +2074,16 @@ namespace PStarSaveEditor
                 }
             }
 
+            // Meseta is not tied to a character, so it is written above either way. Every
+            // remaining field is, so there is nothing further to do without a selection.
+            if (charItem == null)
+            {
+                MessageBox.Show("You must select a character before the character values can be updated.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ResetPS2Controls();
+                PopulatePS2CurrentMeseta();
+                return;
+            }
+
             if (ps2NewCurHPTb.Text != string.Empty)
             {
                 short hp = 0;
@@ -2270,6 +2262,16 @@ namespace PStarSaveEditor
                 }
             }
 
+            // Meseta is not tied to a character, so it is written above either way. Every
+            // remaining field is, so there is nothing further to do without a selection.
+            if (charItem == null)
+            {
+                MessageBox.Show("You must select a character before the character values can be updated.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ResetPS3Controls();
+                PopulatePS3CurrentMeseta();
+                return;
+            }
+
             if (ps3NewSpeedTb.Text != string.Empty)
             {
                 short speed = 0;
@@ -2414,6 +2416,34 @@ namespace PStarSaveEditor
             PopulatePS3CharacterDetails(charItem);
         }        
 
+        /// <summary>
+        /// Writes a single byte stat to the save state from the given text box. Does
+        /// nothing when the text box is empty. The stat is read back as one byte by
+        /// PopulatePS4CharacterDetails, so it must be written as one byte as well.
+        /// </summary>
+        private void UpdatePS4ByteStat(TextBox newValueTb, string offset, string fieldName)
+        {
+            if (newValueTb.Text == string.Empty)
+            {
+                return;
+            }
+
+            short value = 0;
+            if (!short.TryParse(newValueTb.Text, out value))
+            {
+                MessageBox.Show("You must enter a numeric value for the new " + fieldName + " value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (value < 0 || value > PS4_BYTE_MAX)
+            {
+                MessageBox.Show("You must enter a value between 0 and " + PS4_BYTE_MAX.ToString() + " for the new " + fieldName + " value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            SetValueByOffset((byte)value, offset);
+        }
+
         private void UpdatePS4SaveState()
         {
             PS4CharacterItem charItem = ps4CharacterCmb.SelectedItem as PS4CharacterItem;
@@ -2428,6 +2458,16 @@ namespace PStarSaveEditor
                 {
                     MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+            }
+
+            // Meseta is not tied to a character, so it is written above either way. Every
+            // remaining field is, so there is nothing further to do without a selection.
+            if (charItem == null)
+            {
+                MessageBox.Show("You must select a character before the character values can be updated.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ResetPS4Controls();
+                PopulatePS4CurrentMeseta();
+                return;
             }
 
             if (ps4NewExpTb.Text != string.Empty)
@@ -2495,83 +2535,15 @@ namespace PStarSaveEditor
                 }
             }
 
-            if (ps4NewStrTb.Text != string.Empty)
-            {
-                short str = 0;
-                if (short.TryParse(ps4NewStrTb.Text, out str))
-                {
-                    SetValueByOffset(str, charItem.StrengthLoc);
-                }
-                else
-                {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-
-            if (ps4NewMentalTb.Text != string.Empty)
-            {
-                short mental = 0;
-                if (short.TryParse(ps4NewMentalTb.Text, out mental))
-                {
-                    SetValueByOffset(mental, charItem.MentalLoc);
-                }
-                else
-                {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-
-            if (ps4NewAgilityTb.Text != string.Empty)
-            {
-                short agility = 0;
-                if (short.TryParse(ps4NewAgilityTb.Text, out agility))
-                {
-                    SetValueByOffset(agility, charItem.AgilityLoc);
-                }
-                else
-                {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-
-            if (ps4NewDexTb.Text != string.Empty)
-            {
-                short dex = 0;
-                if (short.TryParse(ps4NewDexTb.Text, out dex))
-                {
-                    SetValueByOffset(dex, charItem.DexterityLoc);
-                }
-                else
-                {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-
-            if (ps4NewAtkPowTb.Text != string.Empty)
-            {
-                short atk = 0;
-                if (short.TryParse(ps4NewAtkPowTb.Text, out atk))
-                {
-                    SetValueByOffset(atk, charItem.AttackLoc);
-                }
-                else
-                {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-
-            if (ps4NewDefPowTb.Text != string.Empty)
-            {
-                short def = 0;
-                if (short.TryParse(ps4NewDefPowTb.Text, out def))
-                {
-                    SetValueByOffset(def, charItem.DefenseLoc);
-                }
-                else
-                {
-                    MessageBox.Show("You must enter a numeric value for the new meseta value.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
+            // These six stats are single byte fields, so they must be written one byte
+            // at a time. Writing them as a short would zero the stat and clobber the
+            // neighbouring byte.
+            UpdatePS4ByteStat(ps4NewStrTb, charItem.StrengthLoc, "strength");
+            UpdatePS4ByteStat(ps4NewMentalTb, charItem.MentalLoc, "mental");
+            UpdatePS4ByteStat(ps4NewAgilityTb, charItem.AgilityLoc, "agility");
+            UpdatePS4ByteStat(ps4NewDexTb, charItem.DexterityLoc, "dexterity");
+            UpdatePS4ByteStat(ps4NewAtkPowTb, charItem.AttackLoc, "attack power");
+            UpdatePS4ByteStat(ps4NewDefPowTb, charItem.DefenseLoc, "defense power");
 
             MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             ResetPS4Controls();

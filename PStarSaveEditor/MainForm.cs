@@ -470,129 +470,56 @@ namespace PStarSaveEditor
             control.Visible = show;
         }
 
+        private static string Hex(int value)
+        {
+            return value.ToString("X");
+        }
+
+        // Each Phantasy Star 3 character record is 0x80 bytes. The poison flag sits
+        // just below the record rather than inside it, and the item count lives in a
+        // separate table whose spacing is irregular, so it is passed in explicitly.
+        private PS3CharacterItem MakePS3Char(string name, int b, string itemCntLoc)
+        {
+            return new PS3CharacterItem(name,
+                Hex(b + 0x00),    // speed       (1 byte)
+                Hex(b + 0x03),    // name        (4 ASCII bytes)
+                Hex(b + 0x08),    // level
+                Hex(b + 0x0A),    // max HP
+                Hex(b + 0x0C),    // max TP
+                Hex(b + 0x0E),    // current HP
+                Hex(b + 0x10),    // current TP
+                Hex(b + 0x12),    // damage
+                Hex(b + 0x14),    // defense
+                Hex(b + 0x16),    // experience  (4 bytes)
+                Hex(b + 0x2E),    // luck        (1 byte)
+                Hex(b + 0x2F),    // skill       (1 byte)
+                Hex(b - 0x23),    // poison flag, below the record
+                itemCntLoc);
+        }
+
         private void PopulatePS3CharacterList()
         {
             ps3CharacterCmb.Items.Clear();
 
-            // Rhys
-            PS3CharacterItem rhysItem = new PS3CharacterItem("Rhys",
-                "E51C",
-                "E51F",
-                "E524",
-                "E526",
-                "E528",
-                "E52A",
-                "E52C",
-                "E52E",
-                "E530",
-                "E532",
-                "E54A",
-                "E54B",
-                "E4F9",
-                "102F8");
-            ps3CharacterCmb.Items.Add(rhysItem);
+            // Phantasy Star 3 spans three generations that reuse the same five party
+            // records, so several names read from one record. Each row lists the names
+            // sharing a record, in the order they appear in the drop down.
+            var slots = new[]
+            {
+                new { Names = new[] { "Rhys", "Ayn", "Nial" },  Base = 0xE51C, ItemCnt = "102F8" },
+                new { Names = new[] { "Mieu" },                 Base = 0xE59C, ItemCnt = "1031B" },
+                new { Names = new[] { "Wren" },                 Base = 0xE61C, ItemCnt = "10338" },
+                new { Names = new[] { "Lyle", "Thea", "Ryan" }, Base = 0xE69C, ItemCnt = "10358" },
+                new { Names = new[] { "Lena", "Sari", "Laya" }, Base = 0xE71C, ItemCnt = "10378" }
+            };
 
-            // Ayn
-            PS3CharacterItem aynItem = new PS3CharacterItem(rhysItem);
-            aynItem.Name = "Ayn";
-            ps3CharacterCmb.Items.Add(aynItem);
-
-            // Nial
-            PS3CharacterItem nialItem = new PS3CharacterItem(aynItem);
-            nialItem.Name = "Nial";
-            ps3CharacterCmb.Items.Add(nialItem);
-
-            // Mieu
-            PS3CharacterItem chrItem = new PS3CharacterItem("Mieu",
-                "E59C",
-                "E59F",
-                "E5A4",
-                "E5A6",
-                "E5A8",
-                "E5AA",
-                "E5AC",
-                "E5AE",
-                "E5B0",
-                "E5B2",
-                "E5CA",
-                "E5CB",
-                "E579",
-                "1031B");
-            ps3CharacterCmb.Items.Add(chrItem);
-
-            // Wren
-            chrItem = new PS3CharacterItem("Wren",
-                "E61C",
-                "E61F",
-                "E624",
-                "E626",
-                "E628",
-                "E62A",
-                "E62C",
-                "E62E",
-                "E630",
-                "E632",
-                "E64A",
-                "E64B",
-                "E5F9",
-                "10338");
-            ps3CharacterCmb.Items.Add(chrItem);
-
-            // Lyle
-            PS3CharacterItem lyleItem = new PS3CharacterItem("Lyle",
-                "E69C",
-                "E69F",
-                "E6A4",
-                "E6A6",
-                "E6A8",
-                "E6AA",
-                "E6AC",
-                "E6AE",
-                "E6B0",
-                "E6B2",
-                "E6CA",
-                "E6CB",
-                "E679",
-                "10358");
-            ps3CharacterCmb.Items.Add(lyleItem);
-
-            // Thea
-            PS3CharacterItem theaItem = new PS3CharacterItem(lyleItem);
-            theaItem.Name = "Thea";
-            ps3CharacterCmb.Items.Add(theaItem);
-
-            // Ryan
-            PS3CharacterItem ryanItem = new PS3CharacterItem(theaItem);
-            ryanItem.Name = "Ryan";
-            ps3CharacterCmb.Items.Add(ryanItem);
-
-            // Lena
-            PS3CharacterItem lenaItem = new PS3CharacterItem("Lena",
-                "E71C",
-                "E71F",
-                "E724",
-                "E726",
-                "E728",
-                "E72A",
-                "E72C",
-                "E72E",
-                "E730",
-                "E732",
-                "E74A",
-                "E74B",
-                "E6F9",
-                "10378");
-            ps3CharacterCmb.Items.Add(lenaItem);
-
-            // Sari
-            PS3CharacterItem sariItem = new PS3CharacterItem(lenaItem);
-            sariItem.Name = "Sari";
-            ps3CharacterCmb.Items.Add(sariItem);
-
-            // Laya
-            PS3CharacterItem layaItem = new PS3CharacterItem(sariItem);
-            layaItem.Name = "Laya";
-            ps3CharacterCmb.Items.Add(layaItem);
+            foreach (var slot in slots)
+            {
+                foreach (string name in slot.Names)
+                {
+                    ps3CharacterCmb.Items.Add(MakePS3Char(name, slot.Base, slot.ItemCnt));
+                }
+            }
 
             ps3CharacterCmb.DisplayMember = "Name";
         }
@@ -1026,218 +953,44 @@ namespace PStarSaveEditor
             ps4ItemsList.Add(new PSItem("A0", "Mahlay ring"));
         }
 
+        // Each Phantasy Star 4 character record is 0x80 bytes; fields sit at fixed
+        // sub-offsets within it. The four stats and both combat values are single
+        // bytes, which is why they are written through UpdatePS4ByteStat.
+        private PS4CharacterItem MakePS4Char(string name, int b)
+        {
+            return new PS4CharacterItem(name,
+                Hex(b + 0x01),    // level
+                Hex(b + 0x02),    // experience  (4 bytes)
+                Hex(b + 0x06),    // current HP
+                Hex(b + 0x08),    // max HP
+                Hex(b + 0x0A),    // current TP
+                Hex(b + 0x0C),    // max TP
+                Hex(b + 0x10),    // strength    (1 byte)
+                Hex(b + 0x13),    // mental      (1 byte)
+                Hex(b + 0x16),    // agility     (1 byte)
+                Hex(b + 0x19),    // dexterity   (1 byte)
+                Hex(b + 0x44),    // weapon slot 1
+                Hex(b + 0x45),    // weapon slot 2
+                Hex(b + 0x46),    // helmet
+                Hex(b + 0x47),    // armor
+                Hex(b + 0x1D),    // attack      (1 byte)
+                Hex(b + 0x21));   // defense     (1 byte)
+        }
+
         private void PopulatePS4CharacterList()
         {
             ps4CharacterCmb.Items.Clear();
 
-            PS4CharacterItem chazItem = new PS4CharacterItem("Chaz",
-                "11981",
-                "11982",
-                "11986",
-                "11988",
-                "1198A",
-                "1198C",
-                "11990",
-                "11993",
-                "11996",
-                "11999",
-                "119C4",
-                "119C5",
-                "119C6",
-                "119C7",
-                "1199D",
-                "119A1");
-            ps4CharacterCmb.Items.Add(chazItem);
+            string[] names =
+            {
+                "Chaz", "Alys", "Hahn", "Rune", "Gryz", "Rika",
+                "Demi", "Wren", "Raja", "Kyra", "Seth"
+            };
 
-            PS4CharacterItem alysItem = new PS4CharacterItem("Alys",
-                "11A01",
-                "11A02",
-                "11A06",
-                "11A08",
-                "11A0A",
-                "11A0C",
-                "11A10",
-                "11A13",
-                "11A16",
-                "11A19",
-                "11A44",
-                "11A45",
-                "11A46",
-                "11A47",
-                "11A1D",
-                "11A21");
-            ps4CharacterCmb.Items.Add(alysItem);
-
-            PS4CharacterItem hahnItem = new PS4CharacterItem("Hahn",
-                "11A81",
-                "11A82",
-                "11A86",
-                "11A88",
-                "11A8A",
-                "11A8C",
-                "11A90",
-                "11A93",
-                "11A96",
-                "11A99",
-                "11AC4",
-                "11AC5",
-                "11AC6",
-                "11AC7",
-                "11A9D",
-                "11AA1");
-            ps4CharacterCmb.Items.Add(hahnItem);
-
-            PS4CharacterItem runeItem = new PS4CharacterItem("Rune",
-                "11B01",
-                "11B02",
-                "11B06",
-                "11B08",
-                "11B0A",
-                "11B0C",
-                "11B10",
-                "11B13",
-                "11B16",
-                "11B19",
-                "11B44",
-                "11B45",
-                "11B46",
-                "11B47",
-                "11B1D",
-                "11B21");
-            ps4CharacterCmb.Items.Add(runeItem);
-
-            PS4CharacterItem gryzItem = new PS4CharacterItem("Gryz",
-                "11B81",
-                "11B82",
-                "11B86",
-                "11B88",
-                "11B8A",
-                "11B8C",
-                "11B90",
-                "11B93",
-                "11B96",
-                "11B99",
-                "11BC4",
-                "11BC5",
-                "11BC6",
-                "11BC7",
-                "11B9D",
-                "11BA1");
-            ps4CharacterCmb.Items.Add(gryzItem);
-
-            PS4CharacterItem rikaItem = new PS4CharacterItem("Rika",
-                "11C01",
-                "11C02",
-                "11C06",
-                "11C08",
-                "11C0A",
-                "11C0C",
-                "11C10",
-                "11C13",
-                "11C16",
-                "11C19",
-                "11C44",
-                "11C45",
-                "11C46",
-                "11C47",
-                "11C1D",
-                "11C21");
-            ps4CharacterCmb.Items.Add(rikaItem);
-
-            PS4CharacterItem demiItem = new PS4CharacterItem("Demi",
-                "11C81",
-                "11C82",
-                "11C86",
-                "11C88",
-                "11C8A",
-                "11C8C",
-                "11C90",
-                "11C93",
-                "11C96",
-                "11C99",
-                "11CC4",
-                "11CC5",
-                "11CC6",
-                "11CC7",
-                "11C9D",
-                "11CA1");
-            ps4CharacterCmb.Items.Add(demiItem);
-
-            PS4CharacterItem wrenItem = new PS4CharacterItem("Wren",
-                "11D01",
-                "11D02",
-                "11D06",
-                "11D08",
-                "11D0A",
-                "11D0C",
-                "11D10",
-                "11D13",
-                "11D16",
-                "11D19",
-                "11D44",
-                "11D45",
-                "11D46",
-                "11D47",
-                "11D1D",
-                "11D21");
-            ps4CharacterCmb.Items.Add(wrenItem);
-
-            PS4CharacterItem rajaItem = new PS4CharacterItem("Raja",
-                "11D81",
-                "11D82",
-                "11D86",
-                "11D88",
-                "11D8A",
-                "11D8C",
-                "11D90",
-                "11D93",
-                "11D96",
-                "11D99",
-                "11DC4",
-                "11DC5",
-                "11DC6",
-                "11DC7",
-                "11D9D",
-                "11DA1");
-            ps4CharacterCmb.Items.Add(rajaItem);
-
-            PS4CharacterItem kyraItem = new PS4CharacterItem("Kyra",
-                "11E01",
-                "11E02",
-                "11E06",
-                "11E08",
-                "11E0A",
-                "11E0C",
-                "11E10",
-                "11E13",
-                "11E16",
-                "11E19",
-                "11E44",
-                "11E45",
-                "11E46",
-                "11E47",
-                "11E1D",
-                "11E21");
-            ps4CharacterCmb.Items.Add(kyraItem);
-
-            PS4CharacterItem sethItem = new PS4CharacterItem("Seth",
-                "11E81",
-                "11E82",
-                "11E86",
-                "11E88",
-                "11E8A",
-                "11E8C",
-                "11E90",
-                "11E93",
-                "11E96",
-                "11E99",
-                "11EC4",
-                "11EC5",
-                "11EC6",
-                "11EC7",
-                "11E9D",
-                "11EA1");
-            ps4CharacterCmb.Items.Add(sethItem);
+            for (int i = 0; i < names.Length; i++)
+            {
+                ps4CharacterCmb.Items.Add(MakePS4Char(names[i], 0x11980 + i * 0x80));
+            }
 
             ps4CharacterCmb.DisplayMember = "Name";
         }
@@ -1407,65 +1160,35 @@ namespace PStarSaveEditor
             ps1ItemsList.Add(new PSItem("3F", "Debug"));
         }
 
+        // Each Phantasy Star character record is 0x10 bytes; fields sit at fixed
+        // sub-offsets within it. This is a Master System game, so its two byte values
+        // are little-endian, unlike the three Genesis titles.
+        private PS1CharacterItem MakePS1Char(string name, int b)
+        {
+            return new PS1CharacterItem(name,
+                Hex(b + 0x02),    // experience  (2 bytes, little-endian)
+                Hex(b + 0x04),    // level
+                Hex(b + 0x00),    // current HP
+                Hex(b + 0x05),    // max HP
+                Hex(b + 0x01),    // current MP
+                Hex(b + 0x06),    // max MP
+                Hex(b + 0x07),    // attack
+                Hex(b + 0x08),    // defense
+                Hex(b + 0x09),    // equipped weapon
+                Hex(b + 0x0A),    // equipped armor
+                Hex(b + 0x0B));   // equipped shield
+        }
+
         private void PopulatePS1CharacterList()
         {
             ps1CharacterCmb.Items.Clear();
 
-            PS1CharacterItem alisItem = new PS1CharacterItem("Alis Landale",
-                "44BF",
-                "44C1",
-                "44BD",
-                "44C2",
-                "44BE",
-                "44C3",
-                "44C4",
-                "44C5",
-                "44C6",
-                "44C7",
-                "44C8");
-            ps1CharacterCmb.Items.Add(alisItem);
+            string[] names = { "Alis Landale", "Myau", "Odin", "Noah" };
 
-            PS1CharacterItem myauItem = new PS1CharacterItem("Myau",
-                "44CF",
-                "44D1",
-                "44CD",
-                "44D2",
-                "44CE",
-                "44D3",
-                "44D4",
-                "44D5",
-                "44D6",
-                "44D7",
-                "44D8");
-            ps1CharacterCmb.Items.Add(myauItem);
-
-            PS1CharacterItem odinItem = new PS1CharacterItem("Odin",
-                "44DF",
-                "44E1",
-                "44DD",
-                "44E2",
-                "44DE",
-                "44E3",
-                "44E4",
-                "44E5",
-                "44E6",
-                "44E7",
-                "44E8");
-            ps1CharacterCmb.Items.Add(odinItem);
-
-            PS1CharacterItem noahItem = new PS1CharacterItem("Noah",
-                "44EF",
-                "44F1",
-                "44ED",
-                "44F2",
-                "44EE",
-                "44F3",
-                "44F4",
-                "44F5",
-                "44F6",
-                "44F7",
-                "44F8");
-            ps1CharacterCmb.Items.Add(noahItem);
+            for (int i = 0; i < names.Length; i++)
+            {
+                ps1CharacterCmb.Items.Add(MakePS1Char(names[i], 0x44BD + i * 0x10));
+            }
 
             ps1CharacterCmb.DisplayMember = "Name";
         }
@@ -1557,137 +1280,40 @@ namespace PStarSaveEditor
             ClearPanelFields(pstar2Panel);
         }
 
+        // Each Phantasy Star 2 character record is 0x40 bytes; fields sit at fixed
+        // sub-offsets within it.
+        private PS2CharacterItem MakePS2Char(string name, int b)
+        {
+            return new PS2CharacterItem(name,
+                Hex(b + 0x00),    // current HP
+                Hex(b + 0x02),    // max HP
+                Hex(b + 0x04),    // current TP
+                Hex(b + 0x06),    // max TP
+                Hex(b + 0x09),    // level       (1 byte)
+                Hex(b + 0x0A),    // experience  (4 bytes)
+                Hex(b + 0x0E),    // strength
+                Hex(b + 0x10),    // mental
+                Hex(b + 0x12),    // agility
+                Hex(b + 0x14),    // luck
+                Hex(b + 0x16),    // dexterity
+                Hex(b + 0x1A),    // attack
+                Hex(b + 0x1C));   // defense
+        }
+
         private void PopulatePS2CharacterList()
         {
             ps2CharacterCmb.Items.Clear();
 
-            PS2CharacterItem rolfItem = new PS2CharacterItem("Rolf Landale",
-                "E47A",
-                "E47C",
-                "E47E",
-                "E480",
-                "E483",
-                "E484",
-                "E488",
-                "E48A",
-                "E48C",
-                "E48E",
-                "E490",
-                "E494",
-                "E496");
-            ps2CharacterCmb.Items.Add(rolfItem);
+            string[] names =
+            {
+                "Rolf Landale", "Nei", "Rudo Steiner", "Amy Sage",
+                "Hugh Tompson", "Anna Zirski", "Josh Kain", "Shir Gold"
+            };
 
-            PS2CharacterItem neiItem = new PS2CharacterItem("Nei",
-                "E4BA",
-                "E4BC",
-                "E4BE",
-                "E4C0",
-                "E4C3",
-                "E4C4",
-                "E4C8",
-                "E4CA",
-                "E4CC",
-                "E4CE",
-                "E4D0",
-                "E4D4",
-                "E4D6");
-            ps2CharacterCmb.Items.Add(neiItem);
-
-            PS2CharacterItem rudoItem = new PS2CharacterItem("Rudo Steiner",
-                "E4FA",
-                "E4FC",
-                "E4FE",
-                "E500",
-                "E503",
-                "E504",
-                "E508",
-                "E50A",
-                "E50C",
-                "E50E",
-                "E510",
-                "E514",
-                "E516");
-            ps2CharacterCmb.Items.Add(rudoItem);
-
-            PS2CharacterItem amyItem = new PS2CharacterItem("Amy Sage",
-                "E53A",
-                "E53C",
-                "E53E",
-                "E540",
-                "E543",
-                "E544",
-                "E548",
-                "E54A",
-                "E54C",
-                "E54E",
-                "E550",
-                "E554",
-                "E556");
-            ps2CharacterCmb.Items.Add(amyItem);
-
-            PS2CharacterItem hughItem = new PS2CharacterItem("Hugh Tompson",
-                "E57A",
-                "E57C",
-                "E57E",
-                "E580",
-                "E583",
-                "E584",
-                "E588",
-                "E58A",
-                "E58C",
-                "E58E",
-                "E590",
-                "E594",
-                "E596");
-            ps2CharacterCmb.Items.Add(hughItem);
-
-            PS2CharacterItem annaItem = new PS2CharacterItem("Anna Zirski",
-                "E5BA",
-                "E5BC",
-                "E5BE",
-                "E5C0",
-                "E5C3",
-                "E5C4",
-                "E5C8",
-                "E5CA",
-                "E5CC",
-                "E5CE",
-                "E5D0",
-                "E5D4",
-                "E5D6");
-            ps2CharacterCmb.Items.Add(annaItem);
-
-            PS2CharacterItem joshItem = new PS2CharacterItem("Josh Kain",
-                "E5FA",
-                "E5FC",
-                "E5FE",
-                "E600",
-                "E603",
-                "E604",
-                "E608",
-                "E60A",
-                "E60C",
-                "E60E",
-                "E610",
-                "E614",
-                "E616");
-            ps2CharacterCmb.Items.Add(joshItem);
-
-            PS2CharacterItem shirItem = new PS2CharacterItem("Shir Gold",
-                "E63A",
-                "E63C",
-                "E63E",
-                "E640",
-                "E643",
-                "E644",
-                "E648",
-                "E64A",
-                "E64C",
-                "E64E",
-                "E650",
-                "E654",
-                "E656");
-            ps2CharacterCmb.Items.Add(shirItem);
+            for (int i = 0; i < names.Length; i++)
+            {
+                ps2CharacterCmb.Items.Add(MakePS2Char(names[i], 0xE47A + i * 0x40));
+            }
 
             ps2CharacterCmb.DisplayMember = "Name";
         }

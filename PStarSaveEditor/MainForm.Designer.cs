@@ -2406,7 +2406,7 @@
             this.MinimumSize = new System.Drawing.Size(848, 678);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Phantasy Star 2, Phantasy Star3, and Phantasy Star 4 - Save State Editor";
+            this.Text = "Phantasy Star Save State Editor";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

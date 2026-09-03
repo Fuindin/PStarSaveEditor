@@ -9,3 +9,27 @@ I created this project after wanting to play through Phantasy Star 3 without hav
 I started the edtior for Phantasy Star 3 and got it working correctly. Then I decided to add support for Phantasy Star 2, Phantasy Star 4, and most recently Phantasy Star as well. I haven't added support for editing items, techs, or skills, but you can edit meseta (the game currency), experience, and most of the characters stats.
 
 It has been a lot of fun working on this project and I hope it helps other people go back and play these games again.
+
+## Requirements
+
+- Windows
+- [.NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework/net48) (to run; already included in Windows 10 and 11)
+- Visual Studio 2017 or newer (to build)
+
+## Running
+
+Download / extract `PStarSaveEditor.zip` from the repository root and run `PStarSaveEditor.exe`.
+
+## Building
+
+Open `PStarSaveEditor.sln` in Visual Studio, or build from the command line:
+
+```
+msbuild PStarSaveEditor.sln -t:Rebuild -p:Configuration=Release
+```
+
+The build output is written to `PStarSaveEditor\bin\Release`.
+
+## Backups
+
+Before each update the editor writes a timestamped copy of the save state next to the original, as `<file>.<yyyyMMdd-HHmmss>.bak`, so the pre-edit state can be recovered. Even so, it's a good idea to keep your own backup of anything important before editing.

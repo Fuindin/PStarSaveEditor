@@ -37,20 +37,16 @@ namespace PStarSaveEditor
             string filePath = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
             filePath += @"\errorlog.txt";
 
-            // Create reader object
-            TextReader reader = null;
-
             // Make sure file exists
             if (File.Exists(filePath))
             {
                 try
                 {
-                    // Open file
-                    reader = new StreamReader(filePath);
-
-                    // Read the log info
-                    if (reader != null)
+                    // Open file and read the log info
+                    using (TextReader reader = new StreamReader(filePath))
+                    {
                         logText = reader.ReadToEnd();
+                    }
                 }
                 catch (IOException ioE)
                 {
@@ -67,11 +63,6 @@ namespace PStarSaveEditor
                 catch (Exception e)
                 {
                     outputTb.Text = e.Message + " Occurred during call to ReadErrorLog().";
-                }
-                finally
-                {
-                    // Close the stream
-                    reader.Close();
                 }
             }
 

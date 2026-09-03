@@ -316,6 +316,14 @@ namespace PStarSaveEditor
                 return false;
             }
 
+            // Pull the file into memory before backing it up, so a save state that
+            // cannot be read is rejected before anything else happens.
+            if (!EnsureBufferLoaded())
+            {
+                MessageBox.Show("The save state could not be read. See the error log for details.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
             EnsureBackup(saveStateFileTb.Text);
             return true;
         }
@@ -642,34 +650,129 @@ namespace PStarSaveEditor
             //curItemCountTb.Text = val.ToString();
         }
 
-        private string GetValueByOffset(string offset, int bytesToRead)
+        // The whole file is loaded once into fileBytes; all reads and writes go through
+        // it, and each "Update Save State" flushes it to disk in a single write instead
+        // of re-opening the file for every field.
+        private byte[] fileBytes;
+        private string loadedPath;
+        private DateTime loadedWriteTime;
+        private long loadedLength;
+
+        private static int ParseOffset(string offset)
         {
-            string value = string.Empty;
+            return int.Parse(offset, System.Globalization.NumberStyles.HexNumber);
+        }
+
+        /// <summary>
+        /// Ensures fileBytes holds the contents of the file named in the path box. The
+        /// buffer is re-read when the path changes, and also when the file's size or
+        /// timestamp has moved underneath us: the emulator may well have written a new
+        /// save state to the same path while this window sat open, and flushing a stale
+        /// buffer over it would silently discard that.
+        /// </summary>
+        private bool EnsureBufferLoaded()
+        {
+            string path = saveStateFileTb.Text;
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                return false;
+            }
 
             try
             {
-                using (BinaryReader reader = new BinaryReader(new FileStream(saveStateFileTb.Text, FileMode.Open)))
+                FileInfo info = new FileInfo(path);
+                bool current = fileBytes != null
+                    && string.Equals(loadedPath, path, StringComparison.OrdinalIgnoreCase)
+                    && loadedLength == info.Length
+                    && loadedWriteTime == info.LastWriteTimeUtc;
+
+                if (current)
                 {
-                    // Set the position of the reader by the offset
-                    reader.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    // Read the offset
-                    value = BitConverter.ToString(reader.ReadBytes(bytesToRead)).Replace("-", null);
+                    return true;
                 }
+
+                fileBytes = File.ReadAllBytes(path);
+                loadedPath = path;
+                loadedLength = info.Length;
+                loadedWriteTime = info.LastWriteTimeUtc;
+                return true;
             }
-            catch (IOException ioe)
+            catch (Exception e)
             {
-                LogError(ioe.Message + " Occurred when attempting to read a value by its offset.");
+                LogError(e.Message + " Occurred while loading the save state into memory.");
+                fileBytes = null;
+                loadedPath = null;
+                return false;
             }
-            catch (ArgumentException aue)
+        }
+
+        /// <summary>Writes the in-memory buffer back to disk in a single operation.</summary>
+        private bool SaveBufferToDisk()
+        {
+            if (fileBytes == null || string.IsNullOrEmpty(loadedPath))
             {
-                LogError(aue.Message + " Occurred when attempting to read a value by its offset.");
+                return false;
+            }
+
+            try
+            {
+                File.WriteAllBytes(loadedPath, fileBytes);
+
+                // Adopt the timestamp we just created, so the staleness check above does
+                // not mistake our own write for someone else's.
+                FileInfo info = new FileInfo(loadedPath);
+                loadedLength = info.Length;
+                loadedWriteTime = info.LastWriteTimeUtc;
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message + " Occurred while saving the save state to disk.");
+                MessageBox.Show("The save state could not be written to disk. See the error log for details.",
+                    "Save failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Copies count bytes from source[index..] into the buffer at offset. Every write
+        /// funnels through here so the bounds check cannot be skipped: a bad offset used
+        /// to be caught by the file stream, and now has to be caught by us.
+        /// </summary>
+        private bool WriteBytes(int offset, byte[] source, int index, int count)
+        {
+            if (!EnsureBufferLoaded())
+            {
+                return false;
+            }
+
+            if (offset < 0 || count < 0 || index < 0
+                || offset + count > fileBytes.Length || index + count > source.Length)
+            {
+                LogError("Refused out-of-range write at offset 0x" + offset.ToString("X") + " (" + count.ToString() + " bytes).");
+                return false;
+            }
+
+            Buffer.BlockCopy(source, index, fileBytes, offset, count);
+            return true;
+        }
+
+        private string GetValueByOffset(string offset, int bytesToRead)
+        {
+            if (!EnsureBufferLoaded())
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                return BitConverter.ToString(fileBytes, ParseOffset(offset), bytesToRead).Replace("-", null);
             }
             catch (Exception e)
             {
                 LogError(e.Message + " Occurred when attempting to read a value by its offset.");
+                return string.Empty;
             }
-
-            return value;
         }
 
         /// <summary>
@@ -708,215 +811,36 @@ namespace PStarSaveEditor
             return newHex;
         }
 
-        private bool SetValueByOffset(string value, string offset)
-        {
-            bool success = false;
-
-            try
-            {
-                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
-                {
-                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    int valNum = Convert.ToInt32(value);
-                    byte[] bytes = BitConverter.GetBytes(valNum).Reverse().ToArray();
-                    writer.Write(bytes);
-                }
-                success = true;
-            }
-            catch (IOException ioe)
-            {
-                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (ArgumentException aue)
-            {
-                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-
-            return success;
-        }
-
-        private bool SetValueByOffset(long value, string offset)
-        {
-            bool success = false;
-
-            try
-            {
-                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
-                {
-                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                    writer.Write(bytes);
-                }
-
-                success = true;
-            }
-            catch (IOException ioe)
-            {
-                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (ArgumentException aue)
-            {
-                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-
-            return success;
-        }
-
+        // The Genesis / Mega Drive saves are big-endian, so multi-byte values are
+        // reversed before writing. Phantasy Star is a Master System game and stores its
+        // two-byte values little-endian, which is what the ushort overload's reverse
+        // flag selects. Each overload builds its bytes and routes through WriteBytes.
         private bool SetValueByOffset(int value, string offset)
         {
-            bool success = false;
-
-            try
-            {
-                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
-                {
-                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                    writer.Write(bytes);
-                }
-
-                success = true;
-            }
-            catch (IOException ioe)
-            {
-                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (ArgumentException aue)
-            {
-                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-
-            return success;
+            byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+            return WriteBytes(ParseOffset(offset), bytes, 0, 4);
         }
 
         private bool SetValueByOffset(short value, string offset)
         {
-            bool success = false;
-
-            try
-            {
-                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
-                {
-                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                    writer.Write(bytes);
-                }
-
-                success = true;
-            }
-            catch (IOException ioe)
-            {
-                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (ArgumentException aue)
-            {
-                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-
-            return success;
+            byte[] bytes = BitConverter.GetBytes(value).Reverse().ToArray();
+            return WriteBytes(ParseOffset(offset), bytes, 0, 2);
         }
 
         private bool SetValueByOffset(ushort value, string offset, bool reverse)
         {
-            bool success = false;
-
-            try
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (reverse)
             {
-                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
-                {
-                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    byte[] bytes = new byte[]{ };
-                    if (reverse)
-                    {
-                        bytes = BitConverter.GetBytes(value).Reverse().ToArray();
-                    }
-                    else
-                    {
-                        bytes = BitConverter.GetBytes(value).ToArray();
-                    }
-                    writer.Write(bytes);
-                }
-
-                success = true;
-            }
-            catch (IOException ioe)
-            {
-                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (ArgumentException aue)
-            {
-                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
+                bytes = bytes.Reverse().ToArray();
             }
 
-            return success;
+            return WriteBytes(ParseOffset(offset), bytes, 0, 2);
         }
 
         private bool SetValueByOffset(byte value, string offset)
         {
-            bool success = false;
-
-            try
-            {
-                using (BinaryWriter writer = new BinaryWriter(new FileStream(saveStateFileTb.Text, FileMode.Open)))
-                {
-                    writer.BaseStream.Position = long.Parse(offset, System.Globalization.NumberStyles.HexNumber);
-                    writer.Write(value);
-                }
-
-                success = true;
-            }
-            catch (IOException ioe)
-            {
-                LogError(ioe.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (ArgumentException aue)
-            {
-                LogError(aue.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to write a value to the save state file.");
-                success = false;
-            }
-
-            return success;
+            return WriteBytes(ParseOffset(offset), new byte[] { value }, 0, 1);
         }
 
         private string GetCurrentPS4Meseta()
@@ -2070,6 +1994,11 @@ namespace PStarSaveEditor
                 }
             }
 
+            if (!SaveBufferToDisk())
+            {
+                return;   // write failed; SaveBufferToDisk already reported it
+            }
+
             string completionMessage = string.Empty;
             if (errorCount > 0)
             {
@@ -2272,6 +2201,11 @@ namespace PStarSaveEditor
                 }
             }
 
+            if (!SaveBufferToDisk())
+            {
+                return;   // write failed; SaveBufferToDisk already reported it
+            }
+
             MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             ResetPS2Controls();
             PopulatePS2CurrentMeseta();
@@ -2442,6 +2376,11 @@ namespace PStarSaveEditor
 
             SetValueByOffset((byte)poisoned, charItem.PoisonLoc);
 
+            if (!SaveBufferToDisk())
+            {
+                return;   // write failed; SaveBufferToDisk already reported it
+            }
+
             MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             ResetPS3Controls();
             PopulatePS3CurrentMeseta();
@@ -2576,6 +2515,11 @@ namespace PStarSaveEditor
             UpdatePS4ByteStat(ps4NewDexTb, charItem.DexterityLoc, "dexterity");
             UpdatePS4ByteStat(ps4NewAtkPowTb, charItem.AttackLoc, "attack power");
             UpdatePS4ByteStat(ps4NewDefPowTb, charItem.DefenseLoc, "defense power");
+
+            if (!SaveBufferToDisk())
+            {
+                return;   // write failed; SaveBufferToDisk already reported it
+            }
 
             MessageBox.Show("The save state update process has completed.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             ResetPS4Controls();

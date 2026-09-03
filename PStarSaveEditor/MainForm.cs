@@ -14,7 +14,7 @@ namespace PStarSaveEditor
     public partial class MainForm : Form
     {
         #region - Enums -
-        public enum AppPanel
+        private enum AppPanel
         {
             All,
             PStar1,
@@ -48,11 +48,11 @@ namespace PStarSaveEditor
         /// deleted while the application is open, so a cached flag drifts out of step
         /// with what is actually readable.
         /// </summary>
-        public bool FileLoaded
+        private bool FileLoaded
         {
             get { return saveStateFileTb.Text != string.Empty && File.Exists(saveStateFileTb.Text); }
         }
-        public AppPanel ActivePanel
+        private AppPanel ActivePanel
         {
             get { return activePanel; }
             set { activePanel = value; }

@@ -13,8 +13,8 @@ It has been a lot of fun working on this project and I hope it helps other peopl
 ## Requirements
 
 - Windows
-- [.NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework/net48) (to run; already included in Windows 10 and 11)
-- Visual Studio 2017 or newer (to build)
+- [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (to run)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (to build)
 
 ## Running
 
@@ -22,13 +22,13 @@ Download / extract `PStarSaveEditor.zip` from the repository root and run `PStar
 
 ## Building
 
-Open `PStarSaveEditor.sln` in Visual Studio, or build from the command line:
+The project is an SDK-style .NET 10 (`net10.0-windows`) Windows Forms app.
 
 ```
-msbuild PStarSaveEditor.sln -t:Rebuild -p:Configuration=Release
+dotnet build -c Release
 ```
 
-The build output is written to `PStarSaveEditor\bin\Release`.
+or open `PStarSaveEditor.sln` in Visual Studio 2022+.
 
 ## Backups
 

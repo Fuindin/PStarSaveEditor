@@ -36,6 +36,9 @@ namespace PStarSaveEditor
         private AppPanel activePanel;
         private List<PSItem> ps4ItemsList;
         private List<PSItem> ps1ItemsList;
+        // Files backed up (once) this session, so we don't re-snapshot on every edit.
+        private readonly HashSet<string> backedUpThisSession =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         #endregion
 
         #region - Class Properties -
@@ -277,10 +280,33 @@ namespace PStarSaveEditor
 
         #region - Class Methods -
         /// <summary>
-        /// Runs before any save state is written. Confirms a file is actually loaded,
-        /// then takes a timestamped backup beside it. The README asks the user to make
-        /// a backup by hand before editing, which is easy to forget and impossible to
-        /// act on once a bad write has already happened. Returns false to abort.
+        /// Copies the save state to "&lt;path&gt;.bak" once per session before the first
+        /// edit, so the pre-edit state can always be recovered. A failure here is logged
+        /// rather than fatal, so it cannot block the edit the user asked for.
+        /// </summary>
+        private void EnsureBackup(string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path) || !File.Exists(path) || backedUpThisSession.Contains(path))
+                {
+                    return;
+                }
+
+                File.Copy(path, path + ".bak", true);
+                backedUpThisSession.Add(path);
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message + " Occurred while creating a backup (.bak) of the save state file.");
+            }
+        }
+
+        /// <summary>
+        /// Runs before any save state is written. Confirms a file is actually loaded and
+        /// takes the session's backup of it. The README asks the user to make a backup by
+        /// hand before editing, which is easy to forget and impossible to act on once a
+        /// bad write has already happened. Returns false to abort the update.
         /// </summary>
         private bool PrepareForUpdate()
         {
@@ -290,27 +316,7 @@ namespace PStarSaveEditor
                 return false;
             }
 
-            string savePath = saveStateFileTb.Text;
-            string backupPath = savePath + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bak";
-
-            try
-            {
-                // A backup from the same second is just as good, so leave it in place
-                // rather than failing the copy on a name that already exists.
-                if (!File.Exists(backupPath))
-                {
-                    File.Copy(savePath, backupPath);
-                }
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message + " Occurred while attempting to back up the save state file.");
-                return MessageBox.Show("The save state could not be backed up to:" + Environment.NewLine
-                        + backupPath + Environment.NewLine + Environment.NewLine
-                        + "Continue editing without a backup?",
-                        "Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
-            }
-
+            EnsureBackup(saveStateFileTb.Text);
             return true;
         }
 

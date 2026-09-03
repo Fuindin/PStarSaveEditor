@@ -32,4 +32,4 @@ The build output is written to `PStarSaveEditor\bin\Release`.
 
 ## Backups
 
-Before each update the editor writes a timestamped copy of the save state next to the original, as `<file>.<yyyyMMdd-HHmmss>.bak`, so the pre-edit state can be recovered. Even so, it's a good idea to keep your own backup of anything important before editing.
+Before the first edit of a session the editor automatically writes a `<file>.bak` copy of the save state next to the original, so the pre-edit state can be recovered. Even so, it's a good idea to keep your own backup of anything important before editing.

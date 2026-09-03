@@ -30,6 +30,10 @@ dotnet build -c Release
 
 or open `PStarSaveEditor.sln` in Visual Studio 2022+.
 
+## Tools
+
+`tools/DriveEditor.ps1` drives the built editor through its real user interface — menu, Browse dialog, character selection, an edit, and the update — then reports the values it displayed before and after. It is useful for checking a change end to end rather than only through the code. Run `Get-Help .\tools\DriveEditor.ps1 -Full` for the parameters and worked examples for each game. Point it at a *copy* of a save state.
+
 ## Backups
 
 Before the first edit of a session the editor automatically writes a `<file>.bak` copy of the save state next to the original, so the pre-edit state can be recovered. Even so, it's a good idea to keep your own backup of anything important before editing.

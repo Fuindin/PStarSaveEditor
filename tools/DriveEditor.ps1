@@ -1,101 +1,91 @@
 <#
 .SYNOPSIS
-    Drives the Phantasy Star save state editor through its real user interface and
-    reports what it displayed before and after an edit.
+    Drives the Phantasy Star save editor through its real user interface, edits one
+    or more characters (and optionally meseta), saves them all at once, reloads the
+    file from disk and reports what it displayed before and after.
 
 .DESCRIPTION
-    Launches the built editor, picks a game from the Game menu, loads a save state
-    through the Browse dialog, selects a character, reads the values on screen,
-    types new ones, clicks Update Save State, dismisses the confirmation, reads the
-    values again and closes the application.
+    Launches the built editor, picks a game from the GAME box, opens a save state
+    through the Open dialog, then for each requested edit selects the character on
+    the party list, reads the field, and types the new value. When every edit is in
+    it clicks SAVE ALL once, dismisses the confirmation, uses File > Reload from
+    Disk so the values come back from the file itself, and reads every field again.
 
-    This exercises the same path a person does, so it catches problems that calling
-    into the assembly directly would miss: menu wiring, panel switching, combo box
-    population, the file dialog, and the update handlers.
+    This exercises the same path a person does — game switching, the file dialog,
+    the party list, the field editors, pending edits carried across characters, and
+    the single save — so it catches problems that calling the assembly would miss.
 
     ALWAYS POINT THIS AT A COPY of a save state, never one you care about. The
-    editor writes a <file>.bak beside it before the first edit of a session, but a
+    editor writes a <file>.bak beside it before the first save of a session, but a
     test script should not be the only thing standing between you and a lost save.
 
-    Two quirks of automating this application are worth knowing, because they look
-    like bugs when you first hit them:
+    Two quirks of automating this application are worth knowing:
 
-      * The Browse dialog is a classic Win32 dialog (window class #32770), and UI
+      * The Open dialog is a classic Win32 dialog (window class #32770), and UI
         Automation cannot enumerate its children. Its file name box and Open button
         are therefore driven with raw Win32 messages instead.
 
       * InvokePattern.Invoke() does not return while a modal dialog is open, so any
-        click that raises one (Browse, Update Save State) is posted as BM_CLICK
-        rather than invoked, and the resulting dialog is handled separately.
+        click that raises one (Open, Save All) is posted as BM_CLICK rather than
+        invoked, and the resulting dialog is handled separately.
 
-.PARAMETER MenuItem
-    Entry under the Game menu: "Phantasy Star", "Phantasy Star 2",
-    "Phantasy Star 3" or "Phantasy Star 4".
+.PARAMETER Game
+    Game as listed in the GAME box: "Phantasy Star", "Phantasy Star II",
+    "Phantasy Star III" or "Phantasy Star IV".
 
 .PARAMETER SaveFile
     Full path to the save state to load. Use a copy.
 
-.PARAMETER ComboId
-    Character combo box for the panel: ps1CharacterCmb .. ps4CharacterCmb.
+.PARAMETER Edits
+    "Character:field=value" entries, applied in order, plus optionally "meseta=value".
+    Character is the name on the party list (for Phantasy Star III, the name stored
+    in the save, e.g. "Rhys"). Field keys:
 
-.PARAMETER Character
-    Entry to select in that combo, exactly as it appears (e.g. "Alis Landale",
-    "Rolf Landale", "Rhys", "Chaz").
+      all games   exp, hpCur, hpMax, mpCur, mpMax   (mp* is MP in PS1, TP after)
+      PS1         attack, defense
+      PS II       strength, mental, agility, luck, dexterity, attack, defense
+      PS III      damage, defense, speed, luck, skill, poison (1 = poisoned, 0 = cured)
+      PS IV       strength, mental, agility, dexterity, attack, defense
 
-.PARAMETER UpdateBtnId
-    Update button for the panel: upsPS1SaveStateBtn, ps2UpdSavStateBtn,
-    ps3UpdSavStateBtn or ps4UpdSavStateBtn.
+    "level" can be listed with -Read to show it, but it is not editable.
 
-.PARAMETER ReadFields
-    "controlId=Label" pairs read before and after the update.
-
-.PARAMETER SetFields
-    "controlId=value" pairs typed into the New value boxes.
+.PARAMETER Read
+    Extra "Character:field" entries to report before and after without changing them.
 
 .PARAMETER ExePath
     The editor to drive. Defaults to the Release build in this repository.
 
 .EXAMPLE
-    # Phantasy Star: two byte little-endian meseta and experience, one byte max MP
-    .\DriveEditor.ps1 -MenuItem "Phantasy Star" `
-        -SaveFile "D:\saves\COPY-PStar1.ssx" `
-        -ComboId ps1CharacterCmb -Character "Alis Landale" `
-        -UpdateBtnId upsPS1SaveStateBtn `
-        -ReadFields @("ps1CurrentMesetaTb=Meseta","ps1ExpTb=Exp","ps1MaxMPTb=MaxMP") `
-        -SetFields  @("ps1NewMesetaTb=50000","ps1NewExpTb=41000","ps1NewMaxMPTb=45")
+    # Phantasy Star: two byte little-endian meseta and experience, across two characters
+    .\DriveEditor.ps1 -Game "Phantasy Star" -SaveFile "D:\saves\COPY-PStar1.ss0" `
+        -Edits @("meseta=50000","Alis Landale:exp=41000","Alis Landale:mpMax=45","Noah:hpMax=200")
 
 .EXAMPLE
-    # Phantasy Star 2: four byte big-endian meseta and experience, two byte stats
-    .\DriveEditor.ps1 -MenuItem "Phantasy Star 2" `
-        -SaveFile "D:\saves\COPY-PStar2.gsx" `
-        -ComboId ps2CharacterCmb -Character "Rolf Landale" `
-        -UpdateBtnId ps2UpdSavStateBtn `
-        -ReadFields @("ps2CurMesetaTb=Meseta","ps2MaxHPTb=MaxHP","ps2StrTb=Str") `
-        -SetFields  @("ps2NewMesetaTb=250000","ps2NewMaxHPTb=300","ps2NewStrTb=240")
+    # Phantasy Star II: four byte meseta and experience, two byte stats
+    .\DriveEditor.ps1 -Game "Phantasy Star II" -SaveFile "D:\saves\COPY-PStar2.gs0" `
+        -Edits @("meseta=250000","Rolf Landale:hpMax=300","Nei:strength=240","Amy Sage:mpMax=180")
 
 .EXAMPLE
-    # Phantasy Star 4: the single byte stat path, which a two byte write corrupts
-    .\DriveEditor.ps1 -MenuItem "Phantasy Star 4" `
-        -SaveFile "D:\saves\COPY-PStar4.gsx" `
-        -ComboId ps4CharacterCmb -Character "Rune" `
-        -UpdateBtnId ps4UpdSavStateBtn `
-        -ReadFields @("ps4CurrentMesetaTb=Meseta","ps4StrTb=Str","ps4MentalTb=Mental") `
-        -SetFields  @("ps4NewMesetaTb=1234567","ps4NewStrTb=120")
+    # Phantasy Star III: the poison flag and single byte stats
+    .\DriveEditor.ps1 -Game "Phantasy Star III" -SaveFile "D:\saves\COPY-PStar3.gs0" `
+        -Edits @("Rhys:poison=0","Rhys:luck=99","Mieu:speed=80") -Read @("Rhys:level")
+
+.EXAMPLE
+    # Phantasy Star IV: the single byte stat path, which a two byte write corrupts
+    .\DriveEditor.ps1 -Game "Phantasy Star IV" -SaveFile "D:\saves\COPY-PStar4.gs0" `
+        -Edits @("meseta=1234567","Rune:strength=120","Chaz:mental=90","Rika:hpMax=500")
 
 .NOTES
-    After a run, compare the edited copy against the original at the byte level. The
+    After a run, compare the edited copy against its .bak at the byte level. The
     number of differing bytes should account for exactly the fields that were
     changed and nothing else; anything extra means a write is spilling into
     neighbouring data.
 #>
 param(
-  [Parameter(Mandatory=$true)][string]$MenuItem,
+  [Parameter(Mandatory=$true)][string]$Game,
   [Parameter(Mandatory=$true)][string]$SaveFile,
-  [Parameter(Mandatory=$true)][string]$ComboId,
-  [Parameter(Mandatory=$true)][string]$Character,
-  [Parameter(Mandatory=$true)][string]$UpdateBtnId,
-  [Parameter(Mandatory=$true)][string[]]$ReadFields,
-  [Parameter(Mandatory=$true)][string[]]$SetFields,
+  [Parameter(Mandatory=$true)][string[]]$Edits,
+  [string[]]$Read = @(),
   [string]$ExePath = (Join-Path $PSScriptRoot "..\PStarSaveEditor\bin\Release\net10.0-windows\PStarSaveEditor.exe")
 )
 
@@ -107,6 +97,25 @@ if (-not (Test-Path $ExePath)) {
 }
 if (-not (Test-Path $SaveFile)) {
   throw "Save state not found at '$SaveFile'."
+}
+
+# ---- parse the edit list -----------------------------------------------------
+$plan = New-Object System.Collections.ArrayList
+foreach ($e in $Edits) {
+  if ($e -match '^\s*meseta\s*=\s*(\d+)\s*$') {
+    [void]$plan.Add([pscustomobject]@{ Char = $null; Field = 'meseta'; Value = $Matches[1]; Set = $true })
+  } elseif ($e -match '^\s*(.+?)\s*:\s*(\w+)\s*=\s*(\d+)\s*$') {
+    [void]$plan.Add([pscustomobject]@{ Char = $Matches[1]; Field = $Matches[2]; Value = $Matches[3]; Set = $true })
+  } else {
+    throw "Can't read edit '$e'. Use 'Character:field=value' or 'meseta=value'."
+  }
+}
+foreach ($r in $Read) {
+  if ($r -match '^\s*(.+?)\s*:\s*(\w+)\s*$') {
+    [void]$plan.Add([pscustomobject]@{ Char = $Matches[1]; Field = $Matches[2]; Value = $null; Set = $false })
+  } else {
+    throw "Can't read '$r'. Use 'Character:field'."
+  }
 }
 
 $sig = @'
@@ -129,6 +138,7 @@ $BM_CLICK   = 0x00F5
 $WM_SETTEXT = 0x000C
 $AE = [Windows.Automation.AutomationElement]
 $TS = [Windows.Automation.TreeScope]
+$CT = [Windows.Automation.ControlType]
 
 function Get-TopWindows($procId) {
   $out = New-Object System.Collections.ArrayList
@@ -169,36 +179,118 @@ function Wait-Window($procId, $pattern, $timeoutSec = 10) {
   return $null
 }
 
+# Clicks a button of a message box (the first one unless $button matches another)
+# and returns "[title] text".
+function Dismiss-MessageBox($procId, $pattern, $timeoutSec = 10, $button = '.') {
+  $box = Wait-Window $procId $pattern $timeoutSec
+  if (-not $box) { return $null }
+  $bk  = Get-ChildControls $box.hwnd
+  $msg = (($bk | Where-Object { $_.class -eq 'Static' -and $_.text }) | ForEach-Object { $_.text }) -join ' '
+  $btn = $bk | Where-Object { $_.class -eq 'Button' -and ($_.text -replace '&', '') -match $button } | Select-Object -First 1
+  if (-not $btn) { $btn = $bk | Where-Object { $_.class -eq 'Button' } | Select-Object -First 1 }
+  [void][Nat]::PostMessage($btn.hwnd, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
+  Start-Sleep -Milliseconds 800
+  return ("[{0}] {1}" -f $box.title, ($msg -replace '\s+', ' '))
+}
+
 $proc = Start-Process $ExePath -PassThru
 try {
   Start-Sleep -Seconds 3
   $procId = $proc.Id
 
   $win = $AE::RootElement.FindFirst($TS::Children,
-           (New-Object Windows.Automation.PropertyCondition($AE::NameProperty,"Phantasy Star Save State Editor")))
-  if (-not $win) { throw "Main window not found. Did the application start?" }
+           (New-Object Windows.Automation.PropertyCondition($AE::ProcessIdProperty, $procId)))
+  if (-not $win -or $win.Current.Name -notlike 'Phantasy Star Save Editor*') {
+    throw "Main window not found. Did the application start?"
+  }
 
-  function El($id)      { $win.FindFirst($TS::Descendants, (New-Object Windows.Automation.PropertyCondition($AE::AutomationIdProperty,$id))) }
-  function GetVal($id)  { $e = El $id; if ($e) { $e.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value } else { '<not found>' } }
-  function SetVal($id,$v) { (El $id).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($v) }
-  function ByName($n)   { $win.FindFirst($TS::Descendants, (New-Object Windows.Automation.PropertyCondition($AE::NameProperty,$n))) }
+  function El($id) { $win.FindFirst($TS::Descendants, (New-Object Windows.Automation.PropertyCondition($AE::AutomationIdProperty,$id))) }
+
+  # The value-bearing element for a field: the box itself, or the edit inside a NumericUpDown.
+  function ValueTarget($e) {
+    if ($e.Current.ControlType -ne $CT::Edit) {
+      $inner = $e.FindFirst($TS::Descendants, (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $CT::Edit)))
+      if ($inner) { return $inner }
+    }
+    $p = $null
+    if ($e.TryGetCurrentPattern([Windows.Automation.ValuePattern]::Pattern, [ref]$p)) { return $e }
+    return $null
+  }
+
+  function GetField($id) {
+    $e = El $id
+    if (-not $e) { return '<hidden: not used by this character>' }
+    $t = $null
+    if ($e.TryGetCurrentPattern([Windows.Automation.TogglePattern]::Pattern, [ref]$t)) {
+      return [string]$t.Current.ToggleState
+    }
+    $v = ValueTarget $e
+    if (-not $v) { return '<no value>' }
+    return $v.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value
+  }
+
+  function SetField($id, $value) {
+    $e = El $id
+    if (-not $e) { throw "Field '$id' not found. Check the field key for this game." }
+    $t = $null
+    if ($e.TryGetCurrentPattern([Windows.Automation.TogglePattern]::Pattern, [ref]$t)) {
+      $want = if ([int]$value -ne 0) { 'On' } else { 'Off' }
+      for ($i = 0; $i -lt 3 -and [string]$t.Current.ToggleState -ne $want; $i++) { $t.Toggle(); Start-Sleep -Milliseconds 150 }
+      return
+    }
+    # Focus the box and type, as a person would; focus leaving it commits the value.
+    $v = ValueTarget $e
+    $v.SetFocus()
+    $v.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue([string]$value)
+    Start-Sleep -Milliseconds 150
+    (El '_lstChars').SetFocus()
+    Start-Sleep -Milliseconds 200
+  }
+
+  function Select-Character($name) {
+    $lst = El '_lstChars'
+    $item = $lst.FindAll($TS::Children,
+              (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $CT::ListItem))) |
+            Where-Object { $_.Current.Name -eq $name } | Select-Object -First 1
+    if (-not $item) {
+      $names = ($lst.FindAll($TS::Children, [Windows.Automation.Condition]::TrueCondition) | ForEach-Object { $_.Current.Name }) -join ', '
+      throw "Character '$name' is not on the party list ($names)."
+    }
+    $lst.SetFocus()
+    $item.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    Start-Sleep -Milliseconds 500
+  }
+
+  function Report($title) {
+    Write-Output $title
+    foreach ($p in $plan) {
+      if ($p.Field -eq 'meseta') {
+        Write-Output ("  {0,-22}: {1}" -f 'meseta', (GetField '_numMeseta'))
+      } else {
+        Select-Character $p.Char
+        Write-Output ("  {0,-22}: {1}" -f "$($p.Char) $($p.Field)", (GetField "field_$($p.Field)"))
+      }
+    }
+  }
 
   # --- pick the game ---------------------------------------------------------
-  (ByName "Game").GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+  $cbo = El '_cboGame'
+  $cbo.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
   Start-Sleep -Milliseconds 500
-  $mi = $win.FindAll($TS::Descendants,
-          (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[Windows.Automation.ControlType]::MenuItem))) |
-        Where-Object { $_.Current.Name -eq $MenuItem } | Select-Object -First 1
-  if (-not $mi) { throw "'$MenuItem' is not on the Game menu." }
-  $mi.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+  $gi = $cbo.FindAll($TS::Descendants,
+          (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $CT::ListItem))) |
+        Where-Object { $_.Current.Name -eq $Game } | Select-Object -First 1
+  if (-not $gi) { throw "'$Game' is not in the GAME box." }
+  $gi.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+  $cbo.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Collapse()
   Start-Sleep -Milliseconds 900
-  Write-Output "menu: selected '$MenuItem'"
+  Write-Output "game: selected '$Game'"
 
-  # --- load the save state ---------------------------------------------------
+  # --- open the save state ---------------------------------------------------
   # Posted, not invoked: the dialog is modal and would block Invoke().
-  [void][Nat]::PostMessage([IntPtr](El 'browseBtn').Current.NativeWindowHandle, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
-  $dlg = Wait-Window $procId 'save state file' 10
-  if (-not $dlg) { throw "The Browse dialog never appeared." }
+  [void][Nat]::PostMessage([IntPtr](El '_btnOpen').Current.NativeWindowHandle, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
+  $dlg = Wait-Window $procId 'save state' 10
+  if (-not $dlg) { throw "The Open dialog never appeared." }
   # #32770 is opaque to UI Automation, so use Win32 on its children.
   $kids  = Get-ChildControls $dlg.hwnd
   $editH = ($kids | Where-Object { $_.class -eq 'Edit' } | Select-Object -First 1).hwnd
@@ -207,61 +299,59 @@ try {
   Start-Sleep -Milliseconds 300
   [void][Nat]::PostMessage($openH, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
   Start-Sleep -Seconds 2
-  $loaded = GetVal 'saveStateFileTb'
+  $warn = Dismiss-MessageBox $procId '^(Not a matching save state|Open failed)' 1
+  if ($warn) { throw "The editor refused the file: $warn" }
+  $loaded = (El '_lblFile').Current.Name
   if ($loaded -ne $SaveFile) { throw "Expected '$SaveFile' to be loaded but the editor shows '$loaded'." }
   Write-Output "loaded: $loaded"
 
-  # --- choose the character --------------------------------------------------
-  $cmb = El $ComboId
-  if (-not $cmb) { throw "Combo box '$ComboId' not found on this panel." }
-  $cmb.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+  Report "BEFORE"
+
+  # --- make every edit, across characters, without saving in between ---------
+  foreach ($p in $plan | Where-Object { $_.Set }) {
+    if ($p.Field -eq 'meseta') {
+      SetField '_numMeseta' $p.Value
+      Write-Output ("entered meseta = {0}" -f $p.Value)
+    } else {
+      Select-Character $p.Char
+      SetField "field_$($p.Field)" $p.Value
+      Write-Output ("entered {0} {1} = {2}" -f $p.Char, $p.Field, $p.Value)
+    }
+  }
+
+  Write-Output ("banner: {0}" -f (El '_lblBanner').Current.Name)
+
+  # --- one save for everything ---------------------------------------------------
+  # Posted for the same reason as Open: this raises a modal message box.
+  [void][Nat]::PostMessage([IntPtr](El '_btnSave').Current.NativeWindowHandle, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
+  $msg = Dismiss-MessageBox $procId '^(Saved|Save|Save failed|File changed on disk)$' 10
+  Write-Output ("dialog: {0}" -f $(if ($msg) { $msg } else { '(none appeared)' }))
+
+  # --- reload from disk so the AFTER values come from the file itself ----------
+  $file = $win.FindFirst($TS::Descendants, (New-Object Windows.Automation.AndCondition(
+            (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $CT::MenuItem)),
+            (New-Object Windows.Automation.PropertyCondition($AE::NameProperty, 'File')))))
+  $file.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
   Start-Sleep -Milliseconds 500
-  $item = $cmb.FindAll($TS::Descendants,
-            (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty,[Windows.Automation.ControlType]::ListItem))) |
-          Where-Object { $_.Current.Name -eq $Character } | Select-Object -First 1
-  if (-not $item) { throw "Character '$Character' is not in $ComboId." }
-  $item.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
-  Start-Sleep -Milliseconds 800
-  Write-Output "character: selected '$Character'"
-
-  Write-Output "BEFORE"
-  foreach ($f in $ReadFields) {
-    $id,$label = $f -split '=',2
-    Write-Output ("  {0,-14}: {1}" -f $label, (GetVal $id))
-  }
-
-  foreach ($f in $SetFields) {
-    $id,$v = $f -split '=',2
-    SetVal $id $v
-    Write-Output ("entered {0} = {1}" -f $id, $v)
-  }
-  Start-Sleep -Milliseconds 300
-
-  # --- update ----------------------------------------------------------------
-  # Posted for the same reason as Browse: this raises a modal message box.
-  [void][Nat]::PostMessage([IntPtr](El $UpdateBtnId).Current.NativeWindowHandle, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
-  $box = Wait-Window $procId '^(Information|Warning|Error)' 10
-  if ($box) {
-    $bk  = Get-ChildControls $box.hwnd
-    $msg = ($bk | Where-Object { $_.class -eq 'Static' -and $_.text } | Select-Object -First 1).text
-    Write-Output ("dialog: [{0}] {1}" -f $box.title, $msg)
-    [void][Nat]::PostMessage(($bk | Where-Object { $_.class -eq 'Button' } | Select-Object -First 1).hwnd, $BM_CLICK, [IntPtr]::Zero, [IntPtr]::Zero)
+  $reload = $win.FindAll($TS::Descendants,
+              (New-Object Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $CT::MenuItem))) |
+            Where-Object { $_.Current.Name -like 'Reload from Disk*' } | Select-Object -First 1
+  if ($reload) {
+    $reload.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
     Start-Sleep -Seconds 1
+    Write-Output "reloaded from disk"
   } else {
-    Write-Output "dialog: (none appeared)"
+    Write-Output "reload: menu item not found; AFTER shows the in-memory values"
   }
 
-  Start-Sleep -Milliseconds 500
-  Write-Output "AFTER"
-  foreach ($f in $ReadFields) {
-    $id,$label = $f -split '=',2
-    Write-Output ("  {0,-14}: {1}" -f $label, (GetVal $id))
-  }
+  Report "AFTER"
 }
 finally {
   if ($proc -and -not $proc.HasExited) {
     $proc.CloseMainWindow() | Out-Null
     Start-Sleep -Seconds 2
+    # If the editor asked about unsaved changes, answer No.
+    Dismiss-MessageBox $proc.Id '^Unsaved changes$' 1 '^No$' | Out-Null
     if (-not $proc.HasExited) { $proc.Kill() }
   }
   Write-Output "closed"

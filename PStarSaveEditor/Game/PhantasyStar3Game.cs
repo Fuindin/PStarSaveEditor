@@ -69,10 +69,13 @@ internal sealed class PhantasyStar3Game : GameDefinition
             };
 
             string name = NameFromSave(save, b + 0x03) ?? holders[0];
-            string role = holders.Length > 1
-                ? $"Party slot {i + 1}  ·  {string.Join(" / ", holders)}"
-                : $"Party slot {i + 1}  ·  {(holders[0] == "Mieu" ? "Combat cyborg" : "Android")}";
-            list.Add(new CharacterDef($"ps3.{i}", name, role, o));
+            string role = name switch
+            {
+                "Mieu" => $"Party slot {i + 1}  ·  Combat cyborg",
+                "Wren" => $"Party slot {i + 1}  ·  Android",
+                _ => $"Party slot {i + 1}",
+            };
+            list.Add(new CharacterDef($"ps3.{i}", name, role, o) { Index = i });
         }
 
         return list;
@@ -94,5 +97,101 @@ internal sealed class PhantasyStar3Game : GameDefinition
 
         // "RHYS" → "Rhys"; leave mixed case alone.
         return raw.Any(char.IsLower) ? raw : raw[0] + raw[1..].ToLowerInvariant();
+    }
+
+    // ---- Inventory, equipment and techniques ----------------------------------------
+
+    // Each party slot has a 0x20-byte inventory block: a word holding the number of
+    // bytes in use (two per item), then up to 15 item words. In each word bits 4–11
+    // are the item id and bit 15 marks it as equipped.
+    private const int InventoryBase = 0x102F8;
+    private const int InventoryStride = 0x20;
+    private const int InventorySlots = 15;
+
+    private static IEnumerable<(int Word, int Id, bool Equipped)> ReadInventory(SaveState save, int slot)
+    {
+        int b = InventoryBase + slot * InventoryStride;
+        int count = Math.Clamp((int)save.Read(b, 2) / 2, 0, InventorySlots);
+        for (int k = 0; k < count; k++)
+        {
+            int w = (int)save.Read(b + 2 + k * 2, 2);
+            int id = (w >> 4) & 0xFF;
+            if (id != 0)
+            {
+                yield return (w, id, (w & 0x8000) != 0);
+            }
+        }
+    }
+
+    public override bool HasEquipment => true;
+
+    public override IReadOnlyList<EquipEntry> Equipment(SaveState save, CharacterDef c) =>
+        ReadInventory(save, c.Index)
+            .Where(x => x.Equipped)
+            .Select(x => NameTables.PhantasyStar3Items.TryGetValue(x.Id, out var n)
+                ? new EquipEntry("EQUIPPED", x.Id, n, Empty: false, Unknown: false)
+                : new EquipEntry("EQUIPPED", x.Id, "Unknown item", Empty: false, Unknown: true))
+            .ToList();
+
+    public override IReadOnlyList<InfoRow> Inventory(SaveState save, CharacterDef c) =>
+        ReadInventory(save, c.Index)
+            .Select(x => ItemRow(x.Id, x.Id, x.Equipped, NameTables.PhantasyStar3Items))
+            .ToList();
+
+    // Characters don't learn techniques in Phantasy Star III: each one has every
+    // technique in its groups from the start, and shares a power grid between them.
+    private static readonly (string Group, int Tp, string[] Techs)[] Groups =
+    {
+        ("HEAL", 5, new[] { "Res", "Gires", "Rever", "Anti" }),
+        ("MELEE", 2, new[] { "Foi", "Gra", "Tsu", "Zan" }),
+        ("ORDER", 1, new[] { "Fanbi", "Forsa", "Nasak", "Shu" }),
+        ("TIME", 1, new[] { "Deban", "Ner", "Rimit", "Shiza" }),
+    };
+
+    private static readonly Dictionary<string, string[]> GroupsByName = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Sean"] = new[] { "HEAL", "MELEE", "TIME" },
+        ["Mieu"] = new[] { "HEAL", "ORDER" },
+        ["Laya"] = new[] { "HEAL", "ORDER" },
+        ["Gwyn"] = new[] { "HEAL", "ORDER" },
+        ["Ayn"] = new[] { "HEAL", "TIME" },
+        ["Thea"] = new[] { "HEAL", "MELEE" },
+        ["Adan"] = new[] { "HEAL" },
+        ["Aron"] = new[] { "HEAL" },
+        ["Wren"] = new[] { "MELEE", "TIME" },
+        ["Lyle"] = new[] { "MELEE" },
+        ["Ryan"] = new[] { "TIME" },
+        ["Crys"] = new[] { "TIME" },
+        // There are two Karas: the princess (Heal + Order) and the warrior (Melee + Order).
+        ["Kara"] = new[] { "ORDER", "HEAL", "MELEE" },
+    };
+
+    public override string TechHeading => "TECHNIQUES";
+
+    public override string? TechNote =>
+        "Characters start with every technique in their groups and share power between them (levels aren't shown).";
+
+    public override IReadOnlyList<InfoRow> Techniques(SaveState save, CharacterDef c)
+    {
+        var rows = new List<InfoRow>();
+        if (!GroupsByName.TryGetValue(c.Name, out var groups))
+        {
+            return rows;
+        }
+
+        bool kara = c.Name.Equals("Kara", StringComparison.OrdinalIgnoreCase);
+        foreach (var g in Groups.Where(g => groups.Contains(g.Group)))
+        {
+            string suffix = kara && g.Group == "HEAL" ? "   (Kara the princess)"
+                : kara && g.Group == "MELEE" ? "   (Kara the warrior)"
+                : "";
+            rows.Add(InfoRow.Header($"{g.Group}   ·   {g.Tp} TP{suffix}"));
+            foreach (var t in g.Techs)
+            {
+                rows.Add(new InfoRow(RowKind.Entry, t, $"{g.Tp} TP"));
+            }
+        }
+
+        return rows;
     }
 }

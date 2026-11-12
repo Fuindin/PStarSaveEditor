@@ -75,7 +75,7 @@ internal sealed class PhantasyStar4Game : GameDefinition
             {
                 ("WEAPON 1", b + 0x44), ("WEAPON 2", b + 0x45), ("HEAD", b + 0x46), ("BODY", b + 0x47),
             };
-            list.Add(new CharacterDef($"ps4.{i}", Party[i].Name, Party[i].Role, o, equip));
+            list.Add(new CharacterDef($"ps4.{i}", Party[i].Name, Party[i].Role, o, equip) { Index = i });
         }
 
         return list;
@@ -83,4 +83,76 @@ internal sealed class PhantasyStar4Game : GameDefinition
 
     public override IReadOnlyList<EquipEntry> Equipment(SaveState save, CharacterDef c) =>
         FromTable(save, c, ItemTables.PhantasyStar4);
+
+    // ---- Inventory, techniques and skills --------------------------------------------
+
+    // The party shares one list of one-byte item ids (RAM FFF410), ended by a zero;
+    // it runs up to the meseta at 0x118B0.
+    private const int InventoryOffset = 0x11888;
+    private const int InventorySlots = 40;
+
+    // Within each 0x80 record: 16 technique ids from +0x4A, 8 skill ids from +0x5A,
+    // and a (uses left, max uses) byte pair per skill from +0x62.
+    private const int TechOffset = 0x4A;
+    private const int TechSlots = 16;
+    private const int SkillOffset = 0x5A;
+    private const int SkillSlots = 8;
+    private const int SkillUsesOffset = 0x62;
+
+    public override bool InventoryIsShared => true;
+
+    public override IReadOnlyList<InfoRow> Inventory(SaveState save, CharacterDef c) =>
+        ByteItems(save, InventoryOffset, InventorySlots, ItemTables.PhantasyStar4, stopAtZero: true);
+
+    public override string TechHeading => "TECHNIQUES & SKILLS";
+
+    public override IReadOnlyList<InfoRow> Techniques(SaveState save, CharacterDef c)
+    {
+        var rows = new List<InfoRow>();
+        int b = TableBase + c.Index * RecordSize;
+
+        var techs = new List<InfoRow>();
+        for (int i = 0; i < TechSlots; i++)
+        {
+            int id = save.Byte(b + TechOffset + i);
+            if (id == 0)
+            {
+                continue;
+            }
+
+            techs.Add(NameTables.PhantasyStar4Techniques.TryGetValue(id, out var n)
+                ? new InfoRow(RowKind.Entry, n)
+                : new InfoRow(RowKind.Muted, "Unknown technique", Hex(id)));
+        }
+
+        if (techs.Count > 0)
+        {
+            rows.Add(InfoRow.Header($"TECHNIQUES   ({techs.Count})"));
+            rows.AddRange(techs);
+        }
+
+        var skills = new List<InfoRow>();
+        for (int i = 0; i < SkillSlots; i++)
+        {
+            int id = save.Byte(b + SkillOffset + i);
+            int left = save.Byte(b + SkillUsesOffset + i * 2);
+            int max = save.Byte(b + SkillUsesOffset + i * 2 + 1);
+            if (max == 0 && id == 0)
+            {
+                continue;
+            }
+
+            skills.Add(NameTables.PhantasyStar4Skills.TryGetValue(id, out var n)
+                ? new InfoRow(RowKind.Entry, n, $"{left} / {max} uses")
+                : new InfoRow(RowKind.Muted, "Unknown skill", Hex(id)));
+        }
+
+        if (skills.Count > 0)
+        {
+            rows.Add(InfoRow.Header($"SKILLS   ({skills.Count})"));
+            rows.AddRange(skills);
+        }
+
+        return rows;
+    }
 }

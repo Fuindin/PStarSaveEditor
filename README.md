@@ -9,7 +9,7 @@ It works with save states created by the **Kega Fusion 3.64** emulator: Master S
 - A themed interface modelled on the games' own menus — dark windows with white frames, amber headings like the series logo, a starfield header like the title screens, and HP / TP gauges on each party member's card. Each game has its own accent colour, and the panel beside the party shows the game's box art (or, if none is embedded, the Algo star system with that game's world picked out).
 - Edit meseta, experience, HP / TP (MP in the first game) and stats for every party member. Phantasy Star III's poison status can be cured or set.
 - **Edit as many characters as you like before saving.** Every change is kept in memory as you move between characters; edited characters are marked ● on the list, and a banner lists everything that's pending. **Save All** writes all of it in one go.
-- View each character's equipment (Phantasy Star and Phantasy Star IV).
+- View each character's **equipment**, the **items** being carried (each character's own items in II and III, the shared party inventory in Phantasy Star and IV), and their **magic / techniques** — with skills and uses left in IV, and techniques still to be learned shown greyed out in Phantasy Star and II. Item, technique and skill names come from each game's own name tables, written out in full.
 - Warns before closing, switching games or opening another file with unsaved changes, and if the emulator has rewritten the file since you opened it.
 - Drag a save state onto the window to open it.
 
@@ -53,7 +53,7 @@ or open `PStarSaveEditor.sln` in Visual Studio 2022+.
 
 ## Project layout
 
-- `Game/` — the in-memory save state (`SaveState.cs`), one definition per game with its offsets and fields, and the item name tables.
+- `Game/` — the in-memory save state (`SaveState.cs`), one definition per game with its offsets, fields, inventory and technique layouts, and the item / technique / skill name tables (`ItemTables.cs`, `NameTables.cs`).
 - `MainForm.cs` / `Theme.cs` / `PhantasyTabControl.cs` — the UI.
 
 ## Tools

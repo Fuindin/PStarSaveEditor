@@ -74,9 +74,47 @@ internal sealed class PhantasyStar2Game : GameDefinition
                 o["mpMax"] = b + 0x06;
             }
 
-            list.Add(new CharacterDef($"ps2.{i}", Party[i].Name, Party[i].Role, o));
+            // Five equipment slots; each holds the plain item id (0 = nothing).
+            var equip = new (string, int)[]
+            {
+                ("HEAD", b + 0x1E), ("HAND 1", b + 0x1F), ("HAND 2", b + 0x20), ("BODY", b + 0x21), ("FEET", b + 0x22),
+            };
+            list.Add(new CharacterDef($"ps2.{i}", Party[i].Name, Party[i].Role, o, equip) { Index = i });
         }
 
         return list;
+    }
+
+    public override bool HasEquipment => true;
+
+    public override IReadOnlyList<EquipEntry> Equipment(SaveState save, CharacterDef c) =>
+        FromTable(save, c, NameTables.PhantasyStar2Items);
+
+    // ---- Inventory and techniques -------------------------------------------------
+
+    // Each character carries 16 one-byte slots at +0x26 (bit 7 = equipped); the
+    // number in use is at +0x25. Technique counts: battle +0x23, map +0x24.
+    private const int ItemsOffset = 0x26;
+    private const int ItemSlots = 16;
+    private const int BattleCountOffset = 0x23;
+    private const int MapCountOffset = 0x24;
+
+    public override IReadOnlyList<InfoRow> Inventory(SaveState save, CharacterDef c) =>
+        ByteItems(save, TableBase + c.Index * RecordSize + ItemsOffset, ItemSlots,
+            NameTables.PhantasyStar2Items, stopAtZero: false, equipBit: true);
+
+    public override IReadOnlyList<InfoRow> Techniques(SaveState save, CharacterDef c)
+    {
+        var rows = new List<InfoRow>();
+        if (c.Index < 0 || c.Index >= NameTables.PhantasyStar2Learning.Length)
+        {
+            return rows;
+        }
+
+        var (map, battle) = NameTables.PhantasyStar2Learning[c.Index];
+        int b = TableBase + c.Index * RecordSize;
+        AddLearned(rows, "BATTLE", battle, save.Byte(b + BattleCountOffset), NameTables.PhantasyStar2Techniques);
+        AddLearned(rows, "MAP", map, save.Byte(b + MapCountOffset), NameTables.PhantasyStar2Techniques);
+        return rows;
     }
 }

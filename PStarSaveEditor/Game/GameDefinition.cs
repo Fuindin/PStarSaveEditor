@@ -58,6 +58,10 @@ internal sealed class CharacterDef
 
     /// <summary>Stable key for tracking unsaved edits.</summary>
     public string Id { get; }
+
+    /// <summary>Position in the game's party table (0-based).</summary>
+    public int Index { get; init; }
+
     public string Name { get; }
 
     /// <summary>Short description shown under the name (class, home world, …).</summary>
@@ -68,6 +72,26 @@ internal sealed class CharacterDef
 
 /// <summary>An equipment slot resolved to a display name.</summary>
 internal readonly record struct EquipEntry(string Slot, int Raw, string Name, bool Empty, bool Unknown);
+
+internal enum RowKind
+{
+    /// <summary>Section heading inside a list (e.g. "BATTLE").</summary>
+    Header,
+
+    /// <summary>An item / technique the character has.</summary>
+    Entry,
+
+    /// <summary>Something shown for reference only (not learned yet, unknown id, …).</summary>
+    Muted,
+}
+
+/// <summary>One row on the ITEMS or TECH tab.</summary>
+/// <param name="Detail">Right-aligned note (raw id, "equipped", uses left, …).</param>
+/// <param name="Highlight">Drawn in amber (equipped items).</param>
+internal readonly record struct InfoRow(RowKind Kind, string Text, string? Detail = null, bool Highlight = false)
+{
+    public static InfoRow Header(string text) => new(RowKind.Header, text);
+}
 
 /// <summary>Colours that give each game its own identity on top of the shared theme.</summary>
 /// <param name="PlateTop">Top of the name / title plate gradient.</param>
@@ -121,6 +145,24 @@ internal abstract class GameDefinition
     public int RequiredLength => _requiredLength ??= ComputeRequiredLength();
 
     public virtual IReadOnlyList<EquipEntry> Equipment(SaveState save, CharacterDef c) => Array.Empty<EquipEntry>();
+
+    /// <summary>True when the whole party shares one inventory (PS I, PS IV).</summary>
+    public virtual bool InventoryIsShared => false;
+
+    /// <summary>Items carried (by this character, or by the party when shared).</summary>
+    public virtual IReadOnlyList<InfoRow> Inventory(SaveState save, CharacterDef c) => Array.Empty<InfoRow>();
+
+    /// <summary>Magic / techniques / skills the character knows.</summary>
+    public virtual IReadOnlyList<InfoRow> Techniques(SaveState save, CharacterDef c) => Array.Empty<InfoRow>();
+
+    /// <summary>Tab caption for <see cref="Techniques"/>.</summary>
+    public virtual string TechTabTitle => "TECH";
+
+    /// <summary>Heading above the technique list.</summary>
+    public virtual string TechHeading => "TECHNIQUES";
+
+    /// <summary>Optional footnote under the technique list.</summary>
+    public virtual string? TechNote => null;
 
     /// <summary>Extra line in the header.</summary>
     public virtual string? InfoLine => null;
@@ -180,6 +222,66 @@ internal abstract class GameDefinition
         }
 
         return list;
+    }
+
+    protected static string Hex(int raw) => $"0x{raw:X2}";
+
+    /// <summary>
+    /// Reads a list of one-byte item ids from <paramref name="start"/>. Zero bytes are
+    /// empty slots; with <paramref name="stopAtZero"/> the first zero ends the list.
+    /// With <paramref name="equipBit"/> bit 7 marks an equipped item.
+    /// </summary>
+    protected static List<InfoRow> ByteItems(SaveState save, int start, int slots,
+        IReadOnlyDictionary<int, string> table, bool stopAtZero, bool equipBit = false)
+    {
+        var rows = new List<InfoRow>();
+        for (int i = 0; i < slots; i++)
+        {
+            int raw = save.Byte(start + i);
+            if (raw == 0)
+            {
+                if (stopAtZero)
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            bool equipped = equipBit && (raw & 0x80) != 0;
+            int id = equipBit ? raw & 0x7F : raw;
+            rows.Add(ItemRow(id, raw, equipped, table));
+        }
+
+        return rows;
+    }
+
+    protected static InfoRow ItemRow(int id, int raw, bool equipped, IReadOnlyDictionary<int, string> table) =>
+        table.TryGetValue(id, out var name)
+            ? new InfoRow(RowKind.Entry, name, equipped ? $"equipped   {Hex(raw)}" : Hex(raw), equipped)
+            : new InfoRow(RowKind.Muted, "Unknown item", Hex(raw));
+
+    /// <summary>
+    /// Lists a learning order, showing the first <paramref name="learned"/> entries as
+    /// known and the rest as still to come.
+    /// </summary>
+    protected static void AddLearned(List<InfoRow> rows, string heading, int[] order, int learned,
+        IReadOnlyDictionary<int, string> table)
+    {
+        if (order.Length == 0)
+        {
+            return;
+        }
+
+        learned = Math.Clamp(learned, 0, order.Length);
+        rows.Add(InfoRow.Header($"{heading}   ({learned} of {order.Length})"));
+        for (int i = 0; i < order.Length; i++)
+        {
+            string name = table.TryGetValue(order[i], out var n) ? n : $"Unknown ({Hex(order[i])})";
+            rows.Add(i < learned
+                ? new InfoRow(RowKind.Entry, name)
+                : new InfoRow(RowKind.Muted, name, "not learned yet"));
+        }
     }
 
     /// <summary>Largest offset + width over every character field and meseta.</summary>

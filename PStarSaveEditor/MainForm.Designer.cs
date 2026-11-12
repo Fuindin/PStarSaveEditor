@@ -31,10 +31,12 @@ partial class MainForm
     private Panel _rightPanel = null!;
     private Panel _namePlate = null!;
     private PhantasyTabControl _tabs = null!;
-    private Panel _tabStatus = null!, _tabEquip = null!;
+    private Panel _tabStatus = null!, _tabEquip = null!, _tabItems = null!, _tabTech = null!;
     private TableLayoutPanel _fieldTable = null!;
     private Label _lblEquipHdr = null!, _equipNote = null!;
     private ListBox _equipList = null!;
+    private Label _lblItemsHdr = null!, _itemsNote = null!, _lblTechHdr = null!, _techNote = null!;
+    private ListBox _itemList = null!, _techList = null!;
 
     protected override void Dispose(bool disposing)
     {
@@ -86,6 +88,14 @@ partial class MainForm
         _equipList = new ListBox();
         _lblEquipHdr = new Label();
         _equipNote = new Label();
+        _tabItems = new Panel();
+        _itemList = new ListBox();
+        _lblItemsHdr = new Label();
+        _itemsNote = new Label();
+        _tabTech = new Panel();
+        _techList = new ListBox();
+        _lblTechHdr = new Label();
+        _techNote = new Label();
         _namePlate = new Panel();
         _menu.SuspendLayout();
         _header.SuspendLayout();
@@ -98,6 +108,8 @@ partial class MainForm
         _tabs.SuspendLayout();
         _tabStatus.SuspendLayout();
         _tabEquip.SuspendLayout();
+        _tabItems.SuspendLayout();
+        _tabTech.SuspendLayout();
         SuspendLayout();
         //
         // _menu
@@ -396,6 +408,74 @@ partial class MainForm
         _equipNote.Size = new Size(669, 37);
         _equipNote.TabIndex = 2;
         //
+        // _tabItems
+        //
+        _tabItems.Controls.Add(_itemList);
+        _tabItems.Controls.Add(_lblItemsHdr);
+        _tabItems.Controls.Add(_itemsNote);
+        _tabItems.Name = "_tabItems";
+        _tabItems.Padding = new Padding(23, 20, 23, 20);
+        _tabItems.TabIndex = 2;
+        //
+        // _itemList
+        //
+        _itemList.BorderStyle = BorderStyle.None;
+        _itemList.Dock = DockStyle.Fill;
+        _itemList.DrawMode = DrawMode.OwnerDrawFixed;
+        _itemList.IntegralHeight = false;
+        _itemList.ItemHeight = 36;
+        _itemList.Name = "_itemList";
+        _itemList.SelectionMode = SelectionMode.None;
+        _itemList.TabIndex = 0;
+        //
+        // _lblItemsHdr
+        //
+        _lblItemsHdr.Dock = DockStyle.Top;
+        _lblItemsHdr.Name = "_lblItemsHdr";
+        _lblItemsHdr.Size = new Size(669, 43);
+        _lblItemsHdr.TabIndex = 1;
+        //
+        // _itemsNote
+        //
+        _itemsNote.Dock = DockStyle.Bottom;
+        _itemsNote.Name = "_itemsNote";
+        _itemsNote.Size = new Size(669, 37);
+        _itemsNote.TabIndex = 2;
+        //
+        // _tabTech
+        //
+        _tabTech.Controls.Add(_techList);
+        _tabTech.Controls.Add(_lblTechHdr);
+        _tabTech.Controls.Add(_techNote);
+        _tabTech.Name = "_tabTech";
+        _tabTech.Padding = new Padding(23, 20, 23, 20);
+        _tabTech.TabIndex = 3;
+        //
+        // _techList
+        //
+        _techList.BorderStyle = BorderStyle.None;
+        _techList.Dock = DockStyle.Fill;
+        _techList.DrawMode = DrawMode.OwnerDrawFixed;
+        _techList.IntegralHeight = false;
+        _techList.ItemHeight = 36;
+        _techList.Name = "_techList";
+        _techList.SelectionMode = SelectionMode.None;
+        _techList.TabIndex = 0;
+        //
+        // _lblTechHdr
+        //
+        _lblTechHdr.Dock = DockStyle.Top;
+        _lblTechHdr.Name = "_lblTechHdr";
+        _lblTechHdr.Size = new Size(669, 43);
+        _lblTechHdr.TabIndex = 1;
+        //
+        // _techNote
+        //
+        _techNote.Dock = DockStyle.Bottom;
+        _techNote.Name = "_techNote";
+        _techNote.Size = new Size(669, 37);
+        _techNote.TabIndex = 2;
+        //
         // _namePlate
         //
         _namePlate.Dock = DockStyle.Top;
@@ -437,6 +517,8 @@ partial class MainForm
         _tabStatus.ResumeLayout(false);
         _tabStatus.PerformLayout();
         _tabEquip.ResumeLayout(false);
+        _tabItems.ResumeLayout(false);
+        _tabTech.ResumeLayout(false);
         ResumeLayout(false);
         PerformLayout();
     }

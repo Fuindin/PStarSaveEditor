@@ -110,6 +110,7 @@ public sealed partial class MainForm : Form
         float name = _lstChars.Font.GetHeight(g), line = small.GetHeight(g);
         _lstChars.ItemHeight = Math.Min(255, (int)Math.Ceiling(name + line * 2 + 36));
         _equipList.ItemHeight = Math.Min(255, (int)Math.Ceiling(_equipList.Font.GetHeight(g)) + 18);
+        _itemList.ItemHeight = _techList.ItemHeight = Math.Min(255, (int)Math.Ceiling(_itemList.Font.GetHeight(g)) + 14);
 
         // Name plate: tall enough for the name and the subtitle line at this DPI.
         using var nameFont = Theme.Body(20f, FontStyle.Bold);
@@ -193,7 +194,7 @@ public sealed partial class MainForm : Form
         _namePlate.Resize += (_, _) => _namePlate.Invalidate();
 
         _tabs.Font = Theme.Body(10f, FontStyle.Bold);
-        foreach (var page in new[] { _tabStatus, _tabEquip })
+        foreach (var page in new[] { _tabStatus, _tabEquip, _tabItems, _tabTech })
         {
             page.BackColor = Theme.WindowHi;
         }
@@ -201,16 +202,25 @@ public sealed partial class MainForm : Form
         _tabStatus.Resize += (_, _) => FitFieldTable();
 
         _fieldTable.BackColor = Theme.WindowHi;
-        StyleHeader(_lblEquipHdr);
-        _lblEquipHdr.BackColor = Theme.WindowHi;
+        foreach (var l in new[] { _lblEquipHdr, _lblItemsHdr, _lblTechHdr })
+        {
+            StyleHeader(l);
+            l.BackColor = Theme.WindowHi;
+        }
 
-        _equipNote.BackColor = Theme.WindowHi;
-        _equipNote.ForeColor = Theme.TextMuted;
-        _equipNote.Font = Theme.Body(8.5f, FontStyle.Italic);
+        foreach (var l in new[] { _equipNote, _itemsNote, _techNote })
+        {
+            l.BackColor = Theme.WindowHi;
+            l.ForeColor = Theme.TextMuted;
+            l.Font = Theme.Body(8.5f, FontStyle.Italic);
+        }
 
-        _equipList.BackColor = Theme.Window;
-        _equipList.ForeColor = Theme.Text;
-        _equipList.Font = Theme.Body(11f);
+        foreach (var lb in new[] { _equipList, _itemList, _techList })
+        {
+            lb.BackColor = Theme.Window;
+            lb.ForeColor = Theme.Text;
+            lb.Font = Theme.Body(11f);
+        }
 
         ApplyAccent();
     }
@@ -314,6 +324,8 @@ public sealed partial class MainForm : Form
         _lstChars.DrawItem += DrawCharacterCard;
         _lstChars.SelectedIndexChanged += (_, _) => LoadSelectedCharacter();
         _equipList.DrawItem += DrawEquipRow;
+        _itemList.DrawItem += (_, e) => DrawInfoRow(_itemList, e, "◆");
+        _techList.DrawItem += (_, e) => DrawInfoRow(_techList, e, "✦");
 
         // Drag events don't bubble from child controls to the form, and the form's
         // surface is entirely covered by docked panels, so every control needs to
@@ -394,15 +406,17 @@ public sealed partial class MainForm : Form
         BuildFieldEditors();
         LoadCover();
 
-        // The EQUIP tab only for games whose equipment slots are mapped.
+        var pages = new List<(string, Control)> { ("STATUS", _tabStatus) };
         if (game.HasEquipment)
         {
-            _tabs.SetPages(("STATUS", _tabStatus), ("EQUIP", _tabEquip));
+            pages.Add(("EQUIP", _tabEquip));
         }
-        else
-        {
-            _tabs.SetPages(("STATUS", _tabStatus));
-        }
+
+        pages.Add(("ITEMS", _tabItems));
+        pages.Add((game.TechTabTitle, _tabTech));
+        _tabs.SetPages(pages.ToArray());
+        _lblItemsHdr.Text = game.InventoryIsShared ? "PARTY INVENTORY" : "ITEMS CARRIED";
+        _lblTechHdr.Text = game.TechHeading;
 
         _numMeseta.Maximum = game.MesetaMax;
         UpdatePartyNote();
@@ -705,6 +719,63 @@ public sealed partial class MainForm : Form
         using var small = Theme.Body(8.5f, FontStyle.Italic);
         TextRenderer.DrawText(g, $"0x{s.Raw:X2}", small, r, Theme.TextMuted,
             TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
+    }
+
+    /// <summary>A row on the ITEMS / TECH tabs: section headers, entries and greyed entries.</summary>
+    private static void DrawInfoRow(ListBox list, DrawItemEventArgs e, string glyph)
+    {
+        var g = e.Graphics;
+        using (var bg = new SolidBrush(Theme.Window))
+        {
+            g.FillRectangle(bg, e.Bounds);
+        }
+
+        if (e.Index < 0 || e.Index >= list.Items.Count)
+        {
+            return;
+        }
+
+        var font = list.Font;
+        var r = Rectangle.Inflate(e.Bounds, -12, 0);
+        if (list.Items[e.Index] is not InfoRow row)
+        {
+            TextRenderer.DrawText(g, list.Items[e.Index]?.ToString() ?? "", font, r, Theme.TextMuted,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+            return;
+        }
+
+        if (row.Kind == RowKind.Header)
+        {
+            // Section heading with an accent rule beneath, like a menu window's title bar.
+            using var hf = Theme.Body(10f, FontStyle.Bold | FontStyle.Italic);
+            TextRenderer.DrawText(g, row.Text, hf, r, Theme.Gold,
+                TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.NoPrefix);
+            using var pen = new Pen(Color.FromArgb(140, Theme.Accent.Glow));
+            g.DrawLine(pen, e.Bounds.Left + 8, e.Bounds.Bottom - 2, e.Bounds.Right - 8, e.Bounds.Bottom - 2);
+            return;
+        }
+
+        using (var pen = new Pen(Color.FromArgb(50, Theme.Steel)))
+        {
+            g.DrawLine(pen, e.Bounds.Left + 8, e.Bounds.Bottom - 1, e.Bounds.Right - 8, e.Bounds.Bottom - 1);
+        }
+
+        bool muted = row.Kind == RowKind.Muted;
+        int glyphW = TextRenderer.MeasureText(glyph + " ", font).Width;
+        TextRenderer.DrawText(g, glyph, font, new Rectangle(r.X + 6, r.Y, glyphW, r.Height),
+            muted ? Theme.SteelDeep : Theme.Accent.Glow,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+
+        Color color = muted ? Theme.TextMuted : row.Highlight ? Theme.Gold : Theme.Text;
+        TextRenderer.DrawText(g, row.Text, font, new Rectangle(r.X + 6 + glyphW, r.Y, r.Width - glyphW - 6, r.Height), color,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+
+        if (row.Detail is { } detail)
+        {
+            using var small = Theme.Body(8.5f, FontStyle.Italic);
+            TextRenderer.DrawText(g, detail, small, r, row.Highlight ? Theme.Gold : Theme.TextMuted,
+                TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+        }
     }
 
     // ---- Stat rows ----------------------------------------------------------------
@@ -1024,6 +1095,8 @@ public sealed partial class MainForm : Form
         _chars.Clear();
         _lstChars.Items.Clear();
         _equipList.Items.Clear();
+        _itemList.Items.Clear();
+        _techList.Items.Clear();
         UpdateState();
     }
 
@@ -1054,8 +1127,9 @@ public sealed partial class MainForm : Form
             "    (or drag the file onto the window).\r\n" +
             "3.  Choose a party member on the left and edit their STATUS.\r\n" +
             "    Amber-labelled rows are editable; grey rows are shown for reference.\r\n" +
-            "    EQUIP shows what each character has equipped (Phantasy Star and\r\n" +
-            "    Phantasy Star IV, view only).\r\n" +
+            "    EQUIP, ITEMS and MAGIC / TECH show what each character has equipped,\r\n" +
+            "    what's being carried, and the magic, techniques and skills they know\r\n" +
+            "    (view only).\r\n" +
             "4.  Edit as many characters as you like, plus MESETA at the top — every\r\n" +
             "    change is kept, and edited characters are marked ● on the list.\r\n" +
             "5.  Click SAVE ALL (Ctrl+S) to write all changes at once. The first save\r\n" +
@@ -1175,6 +1249,66 @@ public sealed partial class MainForm : Form
         _loading = false;
         _namePlate.Invalidate();
         RenderEquipment(c);
+        RenderItems(c);
+        RenderTechniques(c);
+    }
+
+    private void RenderItems(CharacterDef? c)
+    {
+        _itemList.BeginUpdate();
+        _itemList.Items.Clear();
+        if (_save is not null && c is not null)
+        {
+            var rows = _game.Inventory(_save, c);
+            foreach (var r in rows)
+            {
+                _itemList.Items.Add(r);
+            }
+
+            if (rows.Count == 0)
+            {
+                _itemList.Items.Add(_game.InventoryIsShared ? "— the party is carrying nothing —" : $"— {c.Name} is carrying nothing —");
+            }
+
+            int equipped = rows.Count(r => r.Highlight);
+            string who = _game.InventoryIsShared ? "Shared by the whole party" : $"Carried by {c.Name}";
+            _itemsNote.Text = $"{who}: {rows.Count} item(s)" + (equipped > 0 ? $", {equipped} equipped (amber)" : "") + " — view only.";
+        }
+        else
+        {
+            _itemsNote.Text = "";
+        }
+
+        _itemList.EndUpdate();
+    }
+
+    private void RenderTechniques(CharacterDef? c)
+    {
+        _techList.BeginUpdate();
+        _techList.Items.Clear();
+        if (_save is not null && c is not null)
+        {
+            var rows = _game.Techniques(_save, c);
+            foreach (var r in rows)
+            {
+                _techList.Items.Add(r);
+            }
+
+            string what = _game.TechTabTitle == "MAGIC" ? "magic" : "techniques";
+            if (rows.Count == 0)
+            {
+                _techList.Items.Add($"{c.Name} has no {what}.");
+            }
+
+            int known = rows.Count(r => r.Kind == RowKind.Entry);
+            _techNote.Text = rows.Count == 0 ? "" : $"{known} known — view only." + (_game.TechNote is { } n ? "  " + n : "");
+        }
+        else
+        {
+            _techNote.Text = "";
+        }
+
+        _techList.EndUpdate();
     }
 
     private void RenderEquipment(CharacterDef? c)
@@ -1192,11 +1326,13 @@ public sealed partial class MainForm : Form
 
             if (slots.Count == 0)
             {
-                _equipList.Items.Add("— no equipment slots —");
+                _equipList.Items.Add("— nothing equipped —");
             }
 
             int worn = slots.Count(s => !s.Empty);
-            _equipNote.Text = $"{worn} of {slots.Count} slot(s) filled — view only.";
+            _equipNote.Text = slots.All(s => s.Slot == "EQUIPPED")
+                ? $"{worn} item(s) equipped — view only."
+                : $"{worn} of {slots.Count} slot(s) filled — view only.";
         }
         else
         {

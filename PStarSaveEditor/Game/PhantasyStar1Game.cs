@@ -69,7 +69,7 @@ internal sealed class PhantasyStar1Game : GameDefinition
             }
 
             var equip = new (string, int)[] { ("WEAPON", b + 0x09), ("ARMOR", b + 0x0A), ("SHIELD", b + 0x0B) };
-            list.Add(new CharacterDef($"ps1.{i}", Party[i].Name, Party[i].Role, o, equip));
+            list.Add(new CharacterDef($"ps1.{i}", Party[i].Name, Party[i].Role, o, equip) { Index = i });
         }
 
         return list;
@@ -77,4 +77,62 @@ internal sealed class PhantasyStar1Game : GameDefinition
 
     public override IReadOnlyList<EquipEntry> Equipment(SaveState save, CharacterDef c) =>
         FromTable(save, c, ItemTables.PhantasyStar1);
+
+    // ---- Inventory and magic ------------------------------------------------------
+
+    // The party shares 24 one-byte item slots, packed from the front (RAM C4C0).
+    private const int InventoryOffset = 0x457C;
+    private const int InventorySlots = 24;
+
+    public override bool InventoryIsShared => true;
+
+    public override IReadOnlyList<InfoRow> Inventory(SaveState save, CharacterDef c) =>
+        ByteItems(save, InventoryOffset, InventorySlots, ItemTables.PhantasyStar1, stopAtZero: true);
+
+    public override string TechTabTitle => "MAGIC";
+    public override string TechHeading => "MAGIC";
+
+    // Spells in learning order, as listed in the game's own spell windows. A save
+    // stores only how many of each list the character has learned (record +0x0D
+    // for battle, +0x0E for map).
+    private static readonly (string[] Battle, string[] Map)[] Spells =
+    {
+        (new[] { "Heal", "Bye", "Chat", "Fire", "Rope" }, new[] { "Heal", "Fly" }),          // Alis
+        (new[] { "Cure", "Terr", "Wall", "Help" }, new[] { "Cure", "Trap", "Exit" }),        // Myau
+        (Array.Empty<string>(), Array.Empty<string>()),                                       // Odin
+        (new[] { "Fire", "Tele", "Wind", "Prot", "Thun" },
+         new[] { "Cure", "Exit", "Tele", "Open", "Rise" }),                                   // Noah
+    };
+
+    public override IReadOnlyList<InfoRow> Techniques(SaveState save, CharacterDef c)
+    {
+        var rows = new List<InfoRow>();
+        if (c.Index < 0 || c.Index >= Spells.Length)
+        {
+            return rows;
+        }
+
+        var (battle, map) = Spells[c.Index];
+        int b = TableBase + c.Index * RecordSize;
+        AddNames(rows, "BATTLE", battle, save.Byte(b + 0x0D));
+        AddNames(rows, "MAP", map, save.Byte(b + 0x0E));
+        return rows;
+    }
+
+    private static void AddNames(List<InfoRow> rows, string heading, string[] order, int learned)
+    {
+        if (order.Length == 0)
+        {
+            return;
+        }
+
+        learned = Math.Clamp(learned, 0, order.Length);
+        rows.Add(InfoRow.Header($"{heading}   ({learned} of {order.Length})"));
+        for (int i = 0; i < order.Length; i++)
+        {
+            rows.Add(i < learned
+                ? new InfoRow(RowKind.Entry, order[i])
+                : new InfoRow(RowKind.Muted, order[i], "not learned yet"));
+        }
+    }
 }

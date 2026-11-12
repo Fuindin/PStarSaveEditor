@@ -3,9 +3,25 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <Version>2.0.0</Version>
   </PropertyGroup>
+
+  <!-- Legacy per-game item classes, superseded by Game\*.cs. Safe to delete from disk. -->
+  <ItemGroup>
+    <Compile Remove="PS1CharacterItem.cs;PS2CharacterItem.cs;PS3CharacterItem.cs;PS4CharacterItem.cs;PSItem.cs" />
+  </ItemGroup>
+
+  <!--
+    Optional box art shown beside the party list. Drop ps1 / ps2 / ps3 / ps4 .jpg or
+    .png files into Covers\ and they are embedded so the exe stands alone. Without
+    them the editor draws the Algo star system instead.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Covers\*.jpg;Covers\*.jpeg;Covers\*.png" LogicalName="covers.%(Filename)%(Extension)" />
+  </ItemGroup>
 
 </Project>

@@ -1,72 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
+namespace PStarSaveEditor;
 
-namespace PStarSaveEditor
+public partial class ErrorLogView : Form
 {
-    public partial class ErrorLogView : Form
+    public ErrorLogView()
     {
-        public ErrorLogView()
+        InitializeComponent();
+        Theme.ApplyDialog(this);
+        outputTb.Font = Theme.Body(9.5f);
+
+        // The themed button uses a bolder font; let it size itself and keep it
+        // right-aligned under the log.
+        closeBtn.AutoSize = true;
+        closeBtn.Padding = new Padding(10, 2, 10, 2);
+        closeBtn.Left = outputTb.Right - closeBtn.Width;
+    }
+
+    private void ErrorLogView_Load(object? sender, EventArgs e)
+    {
+        outputTb.Text = ReadErrorLog();
+        outputTb.Select(outputTb.TextLength, 0);
+        outputTb.ScrollToCaret();
+    }
+
+    private void closeBtn_Click(object? sender, EventArgs e)
+    {
+        Close();
+    }
+
+    private static string ReadErrorLog()
+    {
+        string filePath = Game.Log.FilePath;
+        if (!File.Exists(filePath))
         {
-            InitializeComponent();
+            return "The error log is empty.";
         }
 
-        private void ErrorLogView_Load(object sender, EventArgs e)
+        try
         {
-            // Read error log data into the view
-            outputTb.Text = ReadErrorLog();
+            string text = File.ReadAllText(filePath);
+            return text.Length == 0 ? "The error log is empty." : text;
         }
-
-        private void closeBtn_Click(object sender, EventArgs e)
+        catch (Exception e)
         {
-            this.Close();
-        }
-
-        private string ReadErrorLog()
-        {
-            string logText = string.Empty;
-
-            // Create error log path
-            string filePath = Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
-            filePath += @"\errorlog.txt";
-
-            // Make sure file exists
-            if (File.Exists(filePath))
-            {
-                try
-                {
-                    // Open file and read the log info
-                    using (TextReader reader = new StreamReader(filePath))
-                    {
-                        logText = reader.ReadToEnd();
-                    }
-                }
-                catch (IOException ioE)
-                {
-                    outputTb.Text = ioE.Message + " Occurred during call to ReadErrorLog().";
-                }
-                catch (OutOfMemoryException oomE)
-                {
-                    outputTb.Text = oomE.Message + " Occurred during call to ReadErrorLog().";
-                }
-                catch (NullReferenceException nE)
-                {
-                    outputTb.Text = nE.Message + " Occurred during call to ReadErrorLog().";
-                }
-                catch (Exception e)
-                {
-                    outputTb.Text = e.Message + " Occurred during call to ReadErrorLog().";
-                }
-            }
-
-            return logText;
+            return e.Message + " Occurred during call to ReadErrorLog().";
         }
     }
 }
